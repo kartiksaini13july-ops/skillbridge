@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillBridge AI - Resume Scorer &amp; Suggested Learning Paths</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #040914;
+  --card-bg: rgba(15, 23, 42, 0.7);
+  --border: rgba(56, 189, 248, 0.3);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --indigo: #6366f1;
+  --emerald: #10b981;
+  --rose: #f43f5e;
+  --neon-blue: #38bdf8;
+  --neon-indigo: #818cf8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+@keyframes bg-shift { 0% { background-position: 0 0, 0 0, 0 0, 0 0; } 100% { background-position: 30px 30px, 30px 30px, 50% 50%, -50% -50%; } }
+@keyframes scanline { 0% { transform: translateY(-10px); opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { transform: translateY(100vh); opacity: 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(56, 189, 248, 0.15) 0%, transparent 50%);
+  background-size: 30px 30px, 30px 30px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.6;
+  padding: 24px 16px;
+  min-height: 100vh;
+  animation: bg-shift 20s linear infinite;
+}
+body::after {
+  content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+  background: rgba(56, 189, 248, 0.4); box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+  animation: scanline 6s linear infinite; pointer-events: none; z-index: 99;
+}
+.container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; position: relative; }
+h1, h2, h3, .logo, .gauge-val { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+
+.header-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); flex-wrap: wrap; gap: 12px; }
+.logo { font-size: 22px; font-weight: 700; color: var(--neon-blue); text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+.btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; text-decoration: none; font-family: 'Plus Jakarta Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--indigo)); color: #fff; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); border: 1px solid rgba(165, 180, 252, 0.5); }
+.btn-primary:hover { box-shadow: 0 0 25px rgba(59, 130, 246, 0.8); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline { background: rgba(15, 23, 42, 0.6); color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
+.btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
+
+.glass-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); border-radius: 24px; padding: 28px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--neon-blue); margin-bottom: 8px; display: block; font-family: 'Space Grotesk', sans-serif; }
+select, textarea, input { width: 100%; background: rgba(4, 9, 20, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 12px 14px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 13px; outline: none; transition: all 0.2s; }
+select:focus, textarea:focus, input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+textarea { resize: vertical; min-height: 140px; }
+select option { background: #0f172a; }
+
+#dropZone { border: 2px dashed var(--border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: rgba(15, 23, 42, 0.4); cursor: pointer; transition: all 0.3s; }
+#dropZone:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+#dropZone.has-file { border-color: var(--emerald); }
+
+.loading-wrap { display: none; text-align: center; padding: 30px 0; }
+.loading-wrap.active { display: block; }
+.spinner { width: 36px; height: 36px; border: 3px solid rgba(56,189,248,0.2); border-top-color: var(--neon-blue); border-radius: 50%; margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
+.loading-wrap .txt { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+
+#resultsContainer { display: none; }
+#resultsContainer.active { display: block; }
+#errorBox { display: none; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.4); border-radius: 16px; padding: 16px 20px; margin-top: 16px; font-size: 13px; color: #fda4af; }
+#errorBox.active { display: block; }
+
+.badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Space Grotesk', sans-serif; }
+.badge-high { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
+.badge-medium { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-free { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-course { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+.course-item { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px; padding: 14px; }
+.project-blueprint { background: linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(4, 9, 20, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.5); box-shadow: 0 0 30px rgba(99, 102, 241, 0.15); border-radius: 16px; padding: 16px; margin-top: 14px; }
+.code-box { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(52, 211, 153, 0.3); padding: 12px 14px; border-radius: 10px; color: #6ee7b7; margin-top: 8px; }
+
+.bullet-row { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+.bullet-bad { border-left: 3px solid var(--rose); padding: 8px 12px; background: rgba(244, 63, 94, 0.05); border-radius: 0 8px 8px 0; font-size: 12px; color: #fca5a5; margin-bottom: 8px; }
+.bullet-good { border-left: 3px solid var(--emerald); padding: 8px 12px; background: rgba(16, 185, 129, 0.05); border-radius: 0 8px 8px 0; font-size: 12px; color: #6ee7b7; font-weight: 600; }
+
+.score-hero { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(16px); border: 1px solid rgba(99, 102, 241, 0.4); box-shadow: 0 0 40px rgba(99, 102, 241, 0.2); border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+.score-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+.score-badge { display: flex; align-items: center; gap: 16px; }
+.gauge-circle { position: relative; width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--neon-indigo); background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); flex-shrink: 0; }
+.gauge-val { font-size: 30px; font-weight: 800; color: var(--neon-indigo); text-shadow: 0 0 10px rgba(99, 102, 241, 0.5); line-height: 1; }
+.sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+.sub-box { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px; padding: 12px 14px; }
+.sub-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.sub-score { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 800; color: var(--neon-blue); margin-top: 4px; text-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
+
+.tabs-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.tab-btn { padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; background: rgba(15, 23, 42, 0.6); color: var(--text-muted); border: 1px solid rgba(56, 189, 248, 0.2); white-space: nowrap; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+.tab-btn.active { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2)); color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+
+.item-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.05); }
+.item-card.high-priority { border: 1px solid rgba(244, 63, 94, 0.4); box-shadow: 0 0 20px rgba(244, 63, 94, 0.15); }
+.item-card.medium-priority { border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
+
+.view-btn.active { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2)); color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+.view-hidden { display: none !important; }
+
+.job-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.05); }
+.job-card-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+.job-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: #fff; }
+.job-company { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.job-desc { font-size: 12.5px; color: #cbd5e1; margin-top: 10px; line-height: 1.6; }
+.skill-chip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; padding: 4px 10px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.25); margin: 3px 4px 0 0; }
+.skill-chip.matched { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
+.match-pct { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 24px; text-align: center; }
+.match-pct-wrap { text-align: center; min-width: 74px; }
+.match-pct-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Space Grotesk'; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header-nav">
+    <div class="logo">⚡ SkillBridge AI</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <a href="/" class="btn btn-outline" style="text-decoration:none;">📄 Back to Full App</a>
+      <button class="btn btn-outline view-btn active" id="viewBtnStudent" onclick="switchView('student')">🎓 Student Portal</button>
+      <button class="btn btn-outline view-btn" id="viewBtnCompany" onclick="switchView('company')">🏢 Company Portal</button>
+    </div>
+  </div>
+
+  <div id="studentView">
+
+  <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="loadSampleResume()">Load Sample SDE Resume</button>
+    <button class="btn btn-primary" id="analyzeBtn" onclick="runAnalysis()">Analyze Resume</button>
+  </div>
+
+  <div class="glass-card" style="margin-top:16px;">
+    <div class="grid-2">
+      <div>
+        <label>Target Role / Track</label>
+        <select id="roleSelect">
+          <option value="Senior Full-Stack SDE">Senior Full-Stack SDE (Node, React, Cloud, DevOps)</option>
+          <option value="AI / ML Engineer">AI &amp; Machine Learning Engineer (PyTorch, LLMs, MLOps)</option>
+          <option value="Cloud Solutions Architect">Cloud &amp; DevOps Architect (AWS, Kubernetes, Terraform)</option>
+          <option value="Frontend Architect">Frontend Architect (React, Vue, WebGL)</option>
+          <option value="Backend Systems Engineer">Backend Systems Engineer (Go, Rust, Distributed Systems)</option>
+          <option value="Data Scientist">Data Scientist (Python, R, SQL, Big Data)</option>
+          <option value="Cyber Security Analyst">Cyber Security Analyst (PenTesting, SOC, Zero Trust)</option>
+          <option value="Mobile App Developer">Mobile App Developer (Swift, Kotlin, React Native)</option>
+          <option value="Data Engineer">Data Engineer (Spark, Airflow, ETL)</option>
+        </select>
+      </div>
+      <div>
+        <label>Resume Source</label>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <input id="candName" placeholder="Candidate Name (e.g., Alex Morgan)" type="text" value="Alex Morgan"/>
+          <div id="dropZone" onclick="document.getElementById('resumeFile').click()">
+            <span class="material-symbols-outlined" style="font-size:32px; color:var(--neon-blue);">cloud_upload</span>
+            <span style="font-size:13px; color:var(--text-muted); font-weight:500;">Drag &amp; drop resume PDF here or <span style="color:var(--neon-blue);">click to upload</span></span>
+            <input id="resumeFile" onchange="handleFileSelect(this)" style="display:none;" type="file" accept="application/pdf"/>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <label>Resume Content (Text / Markdown / Plaintext)</label>
+      <textarea id="resumeInput" placeholder="Paste your resume work history, technical skills, and project descriptions here..."></textarea>
+    </div>
+    <div id="errorBox"></div>
+  </div>
+
+  <div class="loading-wrap" id="loadingWrap">
+    <div class="spinner"></div>
+    <div class="txt" id="loadingTxt">Parsing resume...</div>
+  </div>
+
+  <div id="resultsContainer">
+    <div class="score-hero">
+      <div class="score-header">
+        <div class="score-badge">
+          <div class="gauge-circle">
+            <div style="position:absolute; inset:6px; border:1px dashed rgba(56,189,248,0.4); border-radius:50%;"></div>
+            <svg style="position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg);">
+              <circle id="gaugeArc" cx="45" cy="45" fill="none" r="40" stroke="var(--neon-blue)" stroke-dasharray="0 251" stroke-linecap="round" stroke-width="3" style="filter:drop-shadow(0 0 3px var(--neon-blue)); opacity:0.9; transition: stroke-dasharray 1s ease;"></circle>
+            </svg>
+            <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <span class="gauge-val" id="scoreVal">--</span>
+              <span style="font-size:9px; color:#94a3b8; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:0.05em; margin-top:-4px;">/ 100</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:var(--neon-blue); text-transform:uppercase; letter-spacing:0.1em; font-family:'Space Grotesk';">ATS Suitability Report</div>
+            <h2 id="targetTitle" style="font-size:22px; margin-top:4px;">--</h2>
+            <div style="font-size:12px; color:#cbd5e1; margin-top:2px; font-family:'JetBrains Mono', monospace;" id="matchLevel">--</div>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      </div>
+      <div class="sub-grid" id="subGrid"></div>
+    </div>
+
+    <div class="tabs-bar" style="margin-top:20px;">
+      <button class="tab-btn active" onclick="switchTab('learning', event)">🎓 Skill Gaps & Courses He Can Do</button>
+      <button class="tab-btn" onclick="switchTab('gaps', event)">⚠️ Critical Skill Gaps Overview</button>
+      <button class="tab-btn" onclick="switchTab('bullets', event)">⚡ Google XYZ Rewrites</button>
+    </div>
+    <div id="tab-learning" style="margin-top:14px;"></div>
+    <div id="tab-gaps" style="display:none; margin-top:14px;"></div>
+    <div id="tab-bullets" style="display:none; margin-top:14px;"></div>
+  </div>
+
+  </div>
+  <!-- /studentView -->
+
+  <div id="companyView" class="view-hidden">
+
+    <div class="glass-card">
+      <h2 style="font-size:18px; margin-bottom:16px;">🏢 Post a Job / Internship Opening</h2>
+      <div class="grid-2">
+        <div>
+          <label>Job / Internship Title</label>
+          <input id="jobTitleInput" placeholder="e.g. Junior Full-Stack Developer" type="text"/>
+        </div>
+        <div>
+          <label>Company Name</label>
+          <input id="jobCompanyInput" placeholder="e.g. TechCorp Inc." type="text"/>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Required Skills (comma separated)</label>
+        <input id="jobSkillsInput" placeholder="e.g. React, Node.js, PostgreSQL, REST APIs" type="text"/>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Role Description</label>
+        <textarea id="jobDescInput" placeholder="What will this role involve?" style="min-height:90px;"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="postJob()" style="margin-top:16px;">Post Opening</button>
+      <div id="jobErrorBox" style="display:none; margin-top:14px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.4); border-radius:16px; padding:14px 18px; font-size:13px; color:#fda4af;"></div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <h2 style="font-size:16px; color:var(--neon-blue); font-family:'Space Grotesk';">Live Openings (<span id="jobCount">0</span>)</h2>
+      <div id="matchContextNote" style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono', monospace;"></div>
+    </div>
+    <div id="jobList" style="margin-top:12px;">
+      <div class="glass-card" style="text-align:center; color:var(--text-muted); font-size:13px;">No openings posted yet. Add one above.</div>
+    </div>
+
+  </div>
+  <!-- /companyView -->
+
+</div>
+
+<script>
+// Automatically links to current server origin or localhost
+const BACKEND_URL = window.location.origin || 'http://localhost:3000';
+
+let resumeFile = null;
+let jobs = [];
+let lastAnalysis = null;
+let lastCandidateName = '';
+
+const SAMPLE_RESUME = `Alex Morgan
+Software Engineer | Full-Stack Developer
+alex.morgan@email.com | github.com/alexmorgan
+
+SUMMARY:
+Software developer with 3 years experience building full-stack web applications with JavaScript, React, Node.js, Express, and PostgreSQL.
+
+EXPERIENCE:
+Software Developer | TechCorp Inc. (2023 - Present)
+- Worked on the backend API and made it faster.
+- Responsible for building the user dashboard in React.
+- Fixed bugs and helped test new features before launch.
+- Collaborated with product team on new sprint requirements.
+
+PROJECTS:
+E-Commerce Web Portal (React, Node.js, MongoDB)
+- Built an online store with product browsing, shopping cart, and Stripe checkout.
+- Added authentication and customer profile management.`;
+
+function loadSampleResume(){
+  document.getElementById('resumeInput').value = SAMPLE_RESUME;
+  document.getElementById('candName').value = 'Alex Morgan';
+}
+loadSampleResume();
+
+function handleFileSelect(input){
+  const dropZone = document.getElementById('dropZone');
+  const icon = dropZone.querySelector('.material-symbols-outlined');
+  const text = dropZone.querySelector('span:not(.material-symbols-outlined)');
+  if(input.files && input.files[0]){
+    resumeFile = input.files[0];
+    icon.textContent = 'check_circle';
+    icon.style.color = 'var(--emerald)';
+    text.innerHTML = `Selected: <span style="color:var(--neon-blue);">${resumeFile.name}</span>`;
+    dropZone.classList.add('has-file');
+  }
+}
+
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  let text = '';
+  for(let i=1; i<=pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+function showError(msg){
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.classList.add('active');
+}
+function clearError(){
+  document.getElementById('errorBox').classList.remove('active');
+}
+function setLoading(on, msg){
+  document.getElementById('loadingWrap').classList.toggle('active', on);
+  document.getElementById('analyzeBtn').disabled = on;
+  if(msg) document.getElementById('loadingTxt').textContent = msg;
+}
+
+async function runAnalysis(){
+  clearError();
+  document.getElementById('resultsContainer').classList.remove('active');
+  const role = document.getElementById('roleSelect').value;
+  let resumeText = document.getElementById('resumeInput').value.trim();
+
+  setLoading(true, 'Parsing resume...');
+
+  try{
+    if(resumeFile){
+      resumeText = await extractPdfText(resumeFile);
+    }
+    if(!resumeText || resumeText.trim().length < 30){
+      throw new Error('Please paste resume text or upload a PDF with readable content.');
+    }
+
+    setLoading(true, 'Scoring against ' + role + ' requirements with AI...');
+
+    const response = await fetch(BACKEND_URL + '/api/analyze', {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ resumeText: resumeText.slice(0, 6000), role })
+    });
+
+    const result = await response.json();
+
+    if(!response.ok){
+      throw new Error(result?.error || `Analysis failed (status ${response.status}). Check that your backend is running.`);
+    }
+
+    renderResults(result, role);
+
+  }catch(err){
+    showError(err.message || 'Something went wrong while analyzing. Please try again.');
+  }finally{
+    setLoading(false);
+  }
+}
+
+function scoreColor(score){
+  if(score >= 70) return '#38bdf8';
+  if(score >= 40) return '#f59e0b';
+  return '#f43f5e';
+}
+
+function renderResults(result, role){
+  lastAnalysis = result;
+  lastCandidateName = document.getElementById('candName').value.trim() || 'Candidate';
+  document.getElementById('resultsContainer').classList.add('active');
+
+  document.getElementById('scoreVal').textContent = result.score;
+  document.getElementById('targetTitle').textContent = role;
+  document.getElementById('matchLevel').textContent = 'Match Level: ' + result.match_level;
+
+  const col = scoreColor(result.score);
+  document.getElementById('gaugeArc').setAttribute('stroke-dasharray', (result.score/100*251).toFixed(1) + ' 251');
+  document.getElementById('gaugeArc').setAttribute('stroke', col);
+  document.getElementById('scoreVal').style.color = col;
+
+  const subLabels = {ats_match:'ATS Match', tech_depth:'Tech Depth', impact_metrics:'Impact Metrics', formatting:'Formatting', tone_clarity:'Tone & Clarity'};
+  document.getElementById('subGrid').innerHTML = Object.entries(result.sub_scores).map(([k,v]) => `
+    <div class="sub-box"><div class="sub-label">${subLabels[k] || k}</div><div class="sub-score">${v}%</div></div>
+  `).join('');
+
+  const gaps = (result.skill_gaps && Array.isArray(result.skill_gaps) && result.skill_gaps.length > 0)
+    ? result.skill_gaps
+    : [
+        {
+          skill: "Distributed Systems & Cloud Architecture",
+          priority: "high",
+          description: "Resume lacks production architecture experience with message queues, caching layers, and high-availability patterns.",
+          course: {
+            platform: "Coursera / Meta",
+            title: "Cloud Infrastructure & Distributed Systems",
+            duration: "4 weeks",
+            free: true
+          },
+          capstone_title: "Distributed Fault-Tolerant Cache Service",
+          capstone_line: "Designed resilient Redis caching tier with Kafka event pub/sub, cutting p99 query latency from 240ms to 18ms."
+        }
+      ];
+
+  const renderGapCard = (gap, i) => {
+    const course = gap.course || {
+      platform: 'Coursera',
+      title: `Specialization in ${gap.skill}`,
+      duration: '4-6 weeks',
+      free: true
+    };
+    const courseUrl = course.url || `https://www.google.com/search?q=${encodeURIComponent(course.title + ' ' + course.platform)}`;
+    return `
+      <div class="item-card ${gap.priority === 'high' ? 'high-priority' : 'medium-priority'}">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <h3 style="font-size:17px; color:#fff; font-family:'Space Grotesk', sans-serif;">${i+1}. ${gap.skill}</h3>
+          <span class="badge ${gap.priority === 'high' ? 'badge-high' : 'badge-medium'}">${gap.priority === 'high' ? 'High Priority Gap' : 'Medium Priority Gap'}</span>
+        </div>
+        <p style="font-size:13px; color:#94a3b8; margin-top:8px; line-height:1.5;">${gap.description}</p>
+        
+        <!-- Recommended Course Section -->
+        <div class="course-grid" style="margin-top:12px;">
+          <div class="course-item" style="background:rgba(30, 41, 59, 0.7); border:1px solid rgba(99, 102, 241, 0.3); border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px;">
+              <span class="badge badge-course" style="background:#4338ca; color:#e0e7ff; font-weight:700;">${course.platform}</span>
+              ${course.free ? '<span class="badge badge-free" style="background:#065f46; color:#a7f3d0; font-weight:700;">100% Free Audit</span>' : '<span style="font-size:10px; color:#cbd5e1; font-family:\'Space Grotesk\'; text-transform:uppercase;">Certificate Track</span>'}
+            </div>
+            <div style="font-weight:700; font-size:14px; font-family:'Space Grotesk'; color:#f8fafc;">${course.title}</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:4px;">⏱️ Duration: ${course.duration}</div>
+            <a class="btn btn-primary" href="${courseUrl}" style="margin-top:10px; padding:8px 14px; font-size:12px; display:inline-flex; align-items:center; gap:6px; border-radius:8px;" target="_blank">Enroll / View Course ↗</a>
+          </div>
+        </div>
+
+        ${gap.capstone_title ? `
+        <div class="project-blueprint" style="margin-top:14px; padding:12px 14px; background:rgba(15, 23, 42, 0.8); border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+          <div style="font-size:11px; font-weight:800; color:var(--neon-indigo); text-transform:uppercase; letter-spacing:0.05em; font-family:'Space Grotesk';">🚀 Recommended Portfolio Capstone Project:</div>
+          <div style="font-size:14px; font-weight:700; margin-top:4px; font-family:'Space Grotesk'; color:#fff;">${gap.capstone_title}</div>
+          ${gap.capstone_line ? `<div class="code-box" style="margin-top:8px; font-size:12px; color:#a5f3fc; background:#020617; padding:8px 12px; border-radius:8px; font-family:'JetBrains Mono', monospace;">"${gap.capstone_line}"</div>` : ''}
+        </div>
+        ` : ''}
+      </div>
+    `;
+  };
+
+  document.getElementById('tab-learning').innerHTML = gaps.map(renderGapCard).join('');
+  document.getElementById('tab-gaps').innerHTML = gaps.map(renderGapCard).join('');
+
+  const bullets = (result.bullet_rewrites && Array.isArray(result.bullet_rewrites) && result.bullet_rewrites.length > 0)
+    ? result.bullet_rewrites
+    : [];
+
+  document.getElementById('tab-bullets').innerHTML = bullets.length > 0 ? bullets.map(b => `
+    <div class="bullet-row">
+      <div class="bullet-bad"><strong>Original:</strong> "${b.original}"</div>
+      <div class="bullet-good"><strong>Google XYZ Rewrite:</strong> "${b.rewritten}"</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px; font-family:'JetBrains Mono', monospace;"><strong>[!] Issue Identified:</strong> ${b.issue}</div>
+    </div>
+  `).join('') : '<p style="color:#94a3b8; font-size:13px;">No bullet rewrites needed.</p>';
+
+  document.getElementById('resultsContainer').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function switchTab(tabId, evt){
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('#resultsContainer > div[id^="tab-"]').forEach(el => el.style.display = 'none');
+  const targetTab = document.getElementById('tab-' + tabId);
+  if (targetTab) targetTab.style.display = 'block';
+  if (evt && evt.currentTarget) {
+    evt.currentTarget.classList.add('active');
+  } else if (evt && evt.target) {
+    evt.target.classList.add('active');
+  }
+}
+
+// ---- View switching ----
+function switchView(view){
+  document.getElementById('studentView').classList.toggle('view-hidden', view !== 'student');
+  document.getElementById('companyView').classList.toggle('view-hidden', view !== 'company');
+  document.getElementById('viewBtnStudent').classList.toggle('active', view === 'student');
+  document.getElementById('viewBtnCompany').classList.toggle('active', view === 'company');
+  if(view === 'company') renderJobs();
+}
+
+// ---- Company: post job ----
+function postJob(){
+  const title = document.getElementById('jobTitleInput').value.trim();
+  const company = document.getElementById('jobCompanyInput').value.trim();
+  const skillsRaw = document.getElementById('jobSkillsInput').value.trim();
+  const desc = document.getElementById('jobDescInput').value.trim();
+  const errBox = document.getElementById('jobErrorBox');
+
+  if(!title || !company || !skillsRaw){
+    errBox.textContent = 'Please fill in job title, company name, and at least one required skill.';
+    errBox.style.display = 'block';
+    return;
+  }
+  errBox.style.display = 'none';
+
+  const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
+  jobs.unshift({title, company, skills, desc});
+
+  document.getElementById('jobTitleInput').value = '';
+  document.getElementById('jobCompanyInput').value = '';
+  document.getElementById('jobSkillsInput').value = '';
+  document.getElementById('jobDescInput').value = '';
+
+  renderJobs();
+}
+
+function matchColor(pct){
+  if(pct >= 70) return '#38bdf8';
+  if(pct >= 40) return '#f59e0b';
+  return '#f43f5e';
+}
+
+function renderJobs(){
+  document.getElementById('jobCount').textContent = jobs.length;
+  const noteEl = document.getElementById('matchContextNote');
+  const listEl = document.getElementById('jobList');
+
+  if(lastAnalysis && lastAnalysis.extracted_skills){
+    noteEl.textContent = `Matching against: ${lastCandidateName}'s analyzed resume`;
+  } else {
+    noteEl.textContent = 'Analyze a resume in Student Portal to see match %';
+  }
+
+  if(jobs.length === 0){
+    listEl.innerHTML = '<div class="glass-card" style="text-align:center; color:var(--text-muted); font-size:13px;">No openings posted yet. Add one above.</div>';
+    return;
+  }
+
+  const candidateSkills = (lastAnalysis && lastAnalysis.extracted_skills)
+    ? new Set(lastAnalysis.extracted_skills.map(s => s.toLowerCase()))
+    : null;
+
+  const withMatch = jobs.map(job => {
+    let pct = null;
+    if(candidateSkills){
+      const hits = job.skills.filter(s => candidateSkills.has(s.toLowerCase())).length;
+      pct = Math.round((hits / job.skills.length) * 100);
+    }
+    return {...job, pct};
+  });
+
+  if(candidateSkills){
+    withMatch.sort((a,b) => (b.pct ?? -1) - (a.pct ?? -1));
+  }
+
+  listEl.innerHTML = withMatch.map(job => {
+    const candidateSet = candidateSkills;
+    const chips = job.skills.map(s => {
+      const isMatch = candidateSet && candidateSet.has(s.toLowerCase());
+      return `<span class="skill-chip ${isMatch ? 'matched' : ''}">${isMatch ? '✓ ' : ''}${s}</span>`;
+    }).join('');
+
+    const matchBlock = job.pct !== null ? `
+      <div class="match-pct-wrap">
+        <div class="match-pct" style="color:${matchColor(job.pct)}">${job.pct}%</div>
+        <div class="match-pct-label">Fit</div>
+      </div>` : '';
+
+    return `
+      <div class="job-card">
+        <div class="job-card-head">
+          <div>
+            <div class="job-title">${job.title}</div>
+            <div class="job-company">${job.company}</div>
+          </div>
+          ${matchBlock}
+        </div>
+        ${job.desc ? `<div class="job-desc">${job.desc}</div>` : ''}
+        <div style="margin-top:12px;">${chips}</div>
+      </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
