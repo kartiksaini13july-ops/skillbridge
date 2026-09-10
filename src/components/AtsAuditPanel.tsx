@@ -291,7 +291,7 @@ export const AtsAuditPanel: React.FC<AtsAuditPanelProps> = ({
                           <button
                             onClick={() => handleCopy(gap.capstone_line || '', i)}
                             className="shrink-0 p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
-                            title="Copy Google XYZ resume bullet"
+                            title="Copy resume bullet"
                           >
                             {copiedIndex === i ? (
                               <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -310,30 +310,6 @@ export const AtsAuditPanel: React.FC<AtsAuditPanelProps> = ({
         </div>
       )}
 
-      {/* Google XYZ Rewrites (if present) */}
-      {bulletRewrites && bulletRewrites.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <Zap className="h-3.5 w-3.5 text-amber-500" />
-            <span>Google XYZ Bullet Point Optimizations ({bulletRewrites.length})</span>
-          </h3>
-          <div className="space-y-2.5">
-            {bulletRewrites.map((b, i) => (
-              <div key={i} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
-                <div className="text-rose-700 line-through opacity-80">
-                  <span className="font-semibold">Before:</span> "{b.original}"
-                </div>
-                <div className="text-emerald-800 font-medium bg-emerald-50/80 p-2 rounded-lg border border-emerald-200">
-                  <span className="font-bold text-emerald-900">Google XYZ Formula:</span> "{b.rewritten}"
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  <span className="font-semibold text-slate-700">Issue:</span> {b.issue}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Quantified Metrics Highlight */}
       {quantifiedMetricsFound && quantifiedMetricsFound.length > 0 && (

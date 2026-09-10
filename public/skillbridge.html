@@ -13,23 +13,28 @@
 :root {
   --bg: #040914;
   --card-bg: rgba(15, 23, 42, 0.7);
+  --card-border: rgba(56, 189, 248, 0.25);
   --border: rgba(56, 189, 248, 0.3);
   --text: #f8fafc;
   --text-muted: #94a3b8;
+  --text-dim: #64748b;
   --primary: #3b82f6;
   --indigo: #6366f1;
   --emerald: #10b981;
   --rose: #f43f5e;
+  --amber: #f59e0b;
   --neon-blue: #38bdf8;
   --neon-indigo: #818cf8;
+  --cyber-cyan: #06b6d4;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 @keyframes bg-shift { 0% { background-position: 0 0, 0 0, 0 0, 0 0; } 100% { background-position: 30px 30px, 30px 30px, 50% 50%, -50% -50%; } }
 @keyframes scanline { 0% { transform: translateY(-10px); opacity: 0; } 10% { opacity: 0.5; } 90% { opacity: 0.5; } 100% { transform: translateY(100vh); opacity: 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg);
   background-image:
     linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
@@ -49,63 +54,180 @@ body::after {
   background: rgba(56, 189, 248, 0.4); box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
   animation: scanline 6s linear infinite; pointer-events: none; z-index: 99;
 }
-.container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; position: relative; }
+.container { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; position: relative; }
 h1, h2, h3, .logo, .gauge-val { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
 
-.header-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); flex-wrap: wrap; gap: 12px; }
-.logo { font-size: 22px; font-weight: 700; color: var(--neon-blue); text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
-.btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; text-decoration: none; font-family: 'Plus Jakarta Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
-.btn-primary { background: linear-gradient(135deg, var(--primary), var(--indigo)); color: #fff; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); border: 1px solid rgba(165, 180, 252, 0.5); }
-.btn-primary:hover { box-shadow: 0 0 25px rgba(59, 130, 246, 0.8); transform: translateY(-1px); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.btn-outline { background: rgba(15, 23, 42, 0.6); color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.3); }
-.btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
+.header-nav { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 16px 24px; 
+  background: var(--card-bg); 
+  backdrop-filter: blur(16px); 
+  border: 1px solid var(--border); 
+  border-radius: 20px; 
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); 
+  flex-wrap: wrap; 
+  gap: 12px; 
+}
+.logo { font-size: 22px; font-weight: 700; color: var(--neon-blue); text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); display: flex; align-items: center; gap: 8px; }
+.logo-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.4); font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); }
 
-.glass-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); border-radius: 24px; padding: 28px; }
+.btn { 
+  padding: 8px 16px; 
+  border-radius: 12px; 
+  font-size: 13px; 
+  font-weight: 700; 
+  border: none; 
+  cursor: pointer; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px; 
+  transition: all 0.2s ease; 
+  text-decoration: none; 
+  font-family: 'Plus Jakarta Sans', sans-serif; 
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.btn-primary { 
+  background: linear-gradient(135deg, var(--primary), var(--indigo)); 
+  color: #fff; 
+  border: 1px solid rgba(165, 180, 252, 0.5); 
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); 
+}
+.btn-primary:hover { 
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.8); 
+  transform: translateY(-1px); 
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline { 
+  background: rgba(15, 23, 42, 0.6); 
+  color: var(--neon-blue); 
+  border: 1px solid rgba(56, 189, 248, 0.3); 
+}
+.btn-outline:hover { 
+  background: rgba(56, 189, 248, 0.1); 
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+.btn-secondary {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+.btn-secondary:hover {
+  background: rgba(56, 189, 248, 0.25);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.view-switch {
+  display: flex;
+  background: rgba(2, 6, 23, 0.6);
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  gap: 2px;
+}
+.view-btn {
+  padding: 7px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.view-btn.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(99, 102, 241, 0.25));
+  color: var(--neon-blue);
+  border: 1px solid var(--neon-blue);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.35);
+}
+
+.glass-card { 
+  background: var(--card-bg); 
+  backdrop-filter: blur(16px); 
+  border: 1px solid var(--border); 
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); 
+  border-radius: 20px; 
+  padding: 24px; 
+}
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
 label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--neon-blue); margin-bottom: 8px; display: block; font-family: 'Space Grotesk', sans-serif; }
-select, textarea, input { width: 100%; background: rgba(4, 9, 20, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 12px 14px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 13px; outline: none; transition: all 0.2s; }
-select:focus, textarea:focus, input:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
-textarea { resize: vertical; min-height: 140px; }
-select option { background: #0f172a; }
+select, textarea, input { 
+  width: 100%; 
+  background: rgba(4, 9, 20, 0.6); 
+  border: 1px solid rgba(56, 189, 248, 0.25); 
+  border-radius: 12px; 
+  padding: 11px 14px; 
+  color: #fff; 
+  font-family: 'JetBrains Mono', monospace; 
+  font-size: 12.5px; 
+  outline: none; 
+  transition: all 0.2s; 
+}
+select:focus, textarea:focus, input:focus { 
+  border-color: var(--neon-blue); 
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35); 
+}
+textarea { resize: vertical; min-height: 130px; line-height: 1.5; }
+select option { background: #0f172a; color: #f8fafc; }
 
-#dropZone { border: 2px dashed var(--border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: rgba(15, 23, 42, 0.4); cursor: pointer; transition: all 0.3s; }
+#dropZone { 
+  border: 2px dashed rgba(56, 189, 248, 0.3); 
+  border-radius: 16px; 
+  padding: 24px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+  background: rgba(4, 9, 20, 0.4); 
+  cursor: pointer; 
+  transition: all 0.2s; 
+}
 #dropZone:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
-#dropZone.has-file { border-color: var(--emerald); }
+#dropZone.has-file { border-color: var(--emerald); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
 
 .loading-wrap { display: none; text-align: center; padding: 30px 0; }
 .loading-wrap.active { display: block; }
-.spinner { width: 36px; height: 36px; border: 3px solid rgba(56,189,248,0.2); border-top-color: var(--neon-blue); border-radius: 50%; margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
-.loading-wrap .txt { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.spinner { width: 34px; height: 34px; border: 2.5px solid rgba(56, 189, 248, 0.15); border-top-color: var(--neon-blue); border-radius: 50%; margin: 0 auto 12px; animation: spin 0.8s linear infinite; }
+.loading-wrap .txt { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--neon-blue); text-shadow: 0 0 8px rgba(56, 189, 248, 0.4); }
 
 #resultsContainer { display: none; }
-#resultsContainer.active { display: block; }
-#errorBox { display: none; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.4); border-radius: 16px; padding: 16px 20px; margin-top: 16px; font-size: 13px; color: #fda4af; }
+#resultsContainer.active { display: block; animation: fadeIn 0.3s ease; }
+#errorBox { display: none; background: rgba(244,63,94,0.15); border: 1px solid rgba(244,63,94,0.4); border-radius: 14px; padding: 14px 18px; margin-top: 16px; font-size: 13px; color: #fca5a5; box-shadow: 0 0 15px rgba(244,63,94,0.2); }
 #errorBox.active { display: block; }
 
-.badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Space Grotesk', sans-serif; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Space Grotesk', sans-serif; }
 .badge-high { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
 .badge-medium { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
 .badge-free { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-course { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); }
+.badge-course { background: rgba(99, 102, 241, 0.15); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.3); }
 
 .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
-.course-item { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px; padding: 14px; }
-.project-blueprint { background: linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(4, 9, 20, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.5); box-shadow: 0 0 30px rgba(99, 102, 241, 0.15); border-radius: 16px; padding: 16px; margin-top: 14px; }
-.code-box { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(2, 6, 23, 0.8); border: 1px solid rgba(52, 211, 153, 0.3); padding: 12px 14px; border-radius: 10px; color: #6ee7b7; margin-top: 8px; }
+.course-item { background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px; padding: 14px; }
+.project-blueprint { background: linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(4, 9, 20, 0.8) 100%); border: 1px solid rgba(99, 102, 241, 0.5); border-radius: 16px; padding: 18px; margin-top: 14px; box-shadow: 0 0 30px rgba(99, 102, 241, 0.15); }
+.code-box { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; background: #020617; border: 1px solid rgba(56, 189, 248, 0.2); padding: 10px 12px; border-radius: 10px; color: #a5f3fc; margin-top: 8px; }
 
-.bullet-row { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
-.bullet-bad { border-left: 3px solid var(--rose); padding: 8px 12px; background: rgba(244, 63, 94, 0.05); border-radius: 0 8px 8px 0; font-size: 12px; color: #fca5a5; margin-bottom: 8px; }
-.bullet-good { border-left: 3px solid var(--emerald); padding: 8px 12px; background: rgba(16, 185, 129, 0.05); border-radius: 0 8px 8px 0; font-size: 12px; color: #6ee7b7; font-weight: 600; }
-
-.score-hero { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(16px); border: 1px solid rgba(99, 102, 241, 0.4); box-shadow: 0 0 40px rgba(99, 102, 241, 0.2); border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+.score-hero { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border); box-shadow: 0 0 30px rgba(56, 189, 248, 0.15); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 .score-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
 .score-badge { display: flex; align-items: center; gap: 16px; }
 .gauge-circle { position: relative; width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--neon-indigo); background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); flex-shrink: 0; }
 .gauge-val { font-size: 30px; font-weight: 800; color: var(--neon-indigo); text-shadow: 0 0 10px rgba(99, 102, 241, 0.5); line-height: 1; }
-.sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-.sub-box { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 16px; padding: 12px 14px; }
+.sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.sub-box { background: rgba(4, 9, 20, 0.5); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 14px; padding: 12px 14px; }
 .sub-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .sub-score { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 800; color: var(--neon-blue); margin-top: 4px; text-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
 
@@ -113,23 +235,302 @@ select option { background: #0f172a; }
 .tab-btn { padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; background: rgba(15, 23, 42, 0.6); color: var(--text-muted); border: 1px solid rgba(56, 189, 248, 0.2); white-space: nowrap; transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
 .tab-btn.active { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2)); color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
 
-.item-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.05); }
-.item-card.high-priority { border: 1px solid rgba(244, 63, 94, 0.4); box-shadow: 0 0 20px rgba(244, 63, 94, 0.15); }
-.item-card.medium-priority { border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
+.item-card { background: var(--card-bg); border: 1px solid var(--border); box-shadow: 0 0 15px rgba(56, 189, 248, 0.06); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+.item-card.high-priority { border-left: 3px solid var(--rose); }
+.item-card.medium-priority { border-left: 3px solid var(--amber); }
 
-.view-btn.active { background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2)); color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
 .view-hidden { display: none !important; }
 
-.job-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 0 20px rgba(56, 189, 248, 0.05); }
-.job-card-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
-.job-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: #fff; }
-.job-company { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.job-desc { font-size: 12.5px; color: #cbd5e1; margin-top: 10px; line-height: 1.6; }
-.skill-chip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; padding: 4px 10px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: var(--neon-blue); border: 1px solid rgba(56, 189, 248, 0.25); margin: 3px 4px 0 0; }
-.skill-chip.matched { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); }
-.match-pct { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 24px; text-align: center; }
-.match-pct-wrap { text-align: center; min-width: 74px; }
-.match-pct-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Space Grotesk'; }
+/* Company Recruiter Dashboard Components */
+.recruiter-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.08);
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.kpi-card:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-indigo));
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--neon-blue);
+  font-family: 'Space Grotesk', sans-serif;
+}
+.kpi-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+  letter-spacing: -0.02em;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recruiter-filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.08);
+  border-radius: 16px;
+  margin-bottom: 18px;
+}
+.filter-search-box {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+}
+.filter-search-box input {
+  padding: 9px 12px 9px 34px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+.filter-search-box span {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neon-blue);
+  font-size: 16px;
+  pointer-events: none;
+}
+.filter-pill {
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(4, 9, 20, 0.6);
+  color: var(--text-muted);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.filter-pill:hover {
+  background: rgba(56, 189, 248, 0.1);
+  color: #fff;
+  border-color: var(--neon-blue);
+}
+.filter-pill.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(99, 102, 241, 0.25));
+  color: var(--neon-blue);
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.35);
+}
+
+.job-card { 
+  background: var(--card-bg); 
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border); 
+  border-radius: 18px; 
+  padding: 22px; 
+  margin-bottom: 16px; 
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.06);
+  transition: all 0.2s ease;
+}
+.job-card:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
+  transform: translateY(-1px);
+}
+.job-card-head { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+}
+.job-title { 
+  font-family: 'Space Grotesk', sans-serif; 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #fff; 
+  letter-spacing: -0.01em;
+}
+.job-company { 
+  font-size: 12.5px; 
+  color: #cbd5e1; 
+  margin-top: 4px; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.job-meta-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.08);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  font-family: 'JetBrains Mono', monospace;
+}
+.job-desc { 
+  font-size: 12.5px; 
+  color: #94a3b8; 
+  margin-top: 10px; 
+  line-height: 1.6; 
+}
+
+.skill-chip { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 4px;
+  font-family: 'JetBrains Mono', monospace; 
+  font-size: 10.5px; 
+  font-weight: 500;
+  padding: 3px 9px; 
+  border-radius: 6px; 
+  background: rgba(56, 189, 248, 0.08); 
+  color: #7dd3fc; 
+  border: 1px solid rgba(56, 189, 248, 0.25); 
+  margin: 4px 5px 0 0; 
+}
+.skill-chip.matched { 
+  background: rgba(16, 185, 129, 0.15); 
+  color: #6ee7b7; 
+  border-color: rgba(16, 185, 129, 0.4); 
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); 
+}
+.skill-chip.missing { 
+  background: rgba(245, 158, 11, 0.15); 
+  color: #fde68a; 
+  border-color: rgba(245, 158, 11, 0.35); 
+}
+
+.match-pct { 
+  font-family: 'Space Grotesk', sans-serif; 
+  font-weight: 800; 
+  font-size: 24px; 
+  text-align: center; 
+  line-height: 1;
+  text-shadow: 0 0 12px currentColor;
+}
+.match-pct-wrap { 
+  text-align: center; 
+  min-width: 86px; 
+  padding: 8px 14px;
+  background: rgba(4, 9, 20, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+}
+.match-pct-label { 
+  font-size: 9.5px; 
+  color: var(--text-muted); 
+  text-transform: uppercase; 
+  letter-spacing: 0.06em; 
+  font-family: 'Space Grotesk'; 
+  margin-top: 3px;
+}
+
+.recruiter-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+/* Modal Styling */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 4, 12, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-overlay.active {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+.modal-card {
+  background: rgba(10, 17, 34, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 20px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(56, 189, 248, 0.25);
+  padding: 26px;
+  position: relative;
+}
+
+/* Toast */
+.toast-notice {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--neon-blue);
+  color: #f8fafc;
+  padding: 12px 20px;
+  border-radius: 14px;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: all 0.25s ease;
+}
+.toast-notice.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
 </style>
 </head>
 <body>
@@ -219,11 +620,9 @@ select option { background: #0f172a; }
     <div class="tabs-bar" style="margin-top:20px;">
       <button class="tab-btn active" onclick="switchTab('learning', event)">🎓 Skill Gaps & Courses He Can Do</button>
       <button class="tab-btn" onclick="switchTab('gaps', event)">⚠️ Critical Skill Gaps Overview</button>
-      <button class="tab-btn" onclick="switchTab('bullets', event)">⚡ Google XYZ Rewrites</button>
     </div>
     <div id="tab-learning" style="margin-top:14px;"></div>
     <div id="tab-gaps" style="display:none; margin-top:14px;"></div>
-    <div id="tab-bullets" style="display:none; margin-top:14px;"></div>
   </div>
 
   </div>
@@ -231,40 +630,238 @@ select option { background: #0f172a; }
 
   <div id="companyView" class="view-hidden">
 
-    <div class="glass-card">
-      <h2 style="font-size:18px; margin-bottom:16px;">🏢 Post a Job / Internship Opening</h2>
-      <div class="grid-2">
-        <div>
-          <label>Job / Internship Title</label>
-          <input id="jobTitleInput" placeholder="e.g. Junior Full-Stack Developer" type="text"/>
+    <!-- Recruiter Workspace Header -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+      <div>
+        <div style="font-size:11px; font-weight:800; color:var(--neon-blue); text-transform:uppercase; letter-spacing:0.08em; font-family:'Space Grotesk';">
+          Enterprise Recruitment &amp; Talent Match Portal
         </div>
-        <div>
-          <label>Company Name</label>
-          <input id="jobCompanyInput" placeholder="e.g. TechCorp Inc." type="text"/>
-        </div>
+        <h2 style="font-size:20px; font-weight:700; color:#fff; margin-top:2px;">
+          Candidate Screening &amp; Requisition Pipeline
+        </h2>
+        <p style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
+          Screen incoming resumes against live engineering requisitions with automated skill-gap analysis.
+        </p>
       </div>
-      <div style="margin-top:14px;">
-        <label>Required Skills (comma separated)</label>
-        <input id="jobSkillsInput" placeholder="e.g. React, Node.js, PostgreSQL, REST APIs" type="text"/>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="toggleRequisitionForm()">
+          <span class="material-symbols-outlined" style="font-size:16px;">add_circle</span>
+          <span>Post New Requisition</span>
+        </button>
+        <button class="btn btn-outline" onclick="prefillSampleJob()">
+          <span class="material-symbols-outlined" style="font-size:16px;">auto_fix_high</span>
+          <span>1-Click Prefill Role</span>
+        </button>
       </div>
-      <div style="margin-top:14px;">
-        <label>Role Description</label>
-        <textarea id="jobDescInput" placeholder="What will this role involve?" style="min-height:90px;"></textarea>
-      </div>
-      <button class="btn btn-primary" onclick="postJob()" style="margin-top:16px;">Post Opening</button>
-      <div id="jobErrorBox" style="display:none; margin-top:14px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.4); border-radius:16px; padding:14px 18px; font-size:13px; color:#fda4af;"></div>
     </div>
 
-    <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-      <h2 style="font-size:16px; color:var(--neon-blue); font-family:'Space Grotesk';">Live Openings (<span id="jobCount">0</span>)</h2>
-      <div id="matchContextNote" style="font-size:11.5px; color:var(--text-muted); font-family:'JetBrains Mono', monospace;"></div>
+    <!-- Recruiter Executive KPI Bar -->
+    <div class="recruiter-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Active Requisitions</div>
+        <div class="kpi-value" id="kpiJobCount">4</div>
+        <div class="kpi-sub">
+          <span style="color:#10b981;">●</span> Across Engineering &amp; AI
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Active Candidate Pool</div>
+        <div class="kpi-value" style="font-size:19px;" id="kpiCandidateName">Alex Morgan</div>
+        <div class="kpi-sub" id="kpiCandidateTrack">
+          Full-Stack SDE Profile Loaded
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Top Candidate Fit</div>
+        <div class="kpi-value" style="color:var(--neon-blue);" id="kpiTopFit">92%</div>
+        <div class="kpi-sub">
+          Sr. Full-Stack Role Alignment
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Recruiter Screening SLA</div>
+        <div class="kpi-value">12 Days</div>
+        <div class="kpi-sub">
+          Target Time-to-Technical Screen
+        </div>
+      </div>
     </div>
-    <div id="jobList" style="margin-top:12px;">
-      <div class="glass-card" style="text-align:center; color:var(--text-muted); font-size:13px;">No openings posted yet. Add one above.</div>
+
+    <!-- Post Requisition Form (Collapsible) -->
+    <div id="requisitionFormCard" class="glass-card" style="display:none; margin-bottom:20px; border-color:rgba(99, 102, 241, 0.35);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 style="font-size:16px; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--indigo);">post_add</span>
+          <span>Create New Enterprise Job Opening</span>
+        </h3>
+        <button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="toggleRequisitionForm()">✕ Close</button>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label>Job Title</label>
+          <input id="jobTitleInput" placeholder="e.g. Senior Distributed Systems Engineer" type="text"/>
+        </div>
+        <div>
+          <label>Company / Division</label>
+          <input id="jobCompanyInput" placeholder="e.g. CloudScale Tech Corp" type="text"/>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:12px;">
+        <div>
+          <label>Department / Engineering Track</label>
+          <select id="jobDeptInput">
+            <option value="Core Platform">Core Platform Engineering</option>
+            <option value="Infrastructure & DevOps">Cloud Infrastructure &amp; DevOps</option>
+            <option value="AI & Machine Learning">AI &amp; Machine Learning</option>
+            <option value="Frontend Architecture">Frontend Architecture</option>
+            <option value="Security & Compliance">Security &amp; Compliance</option>
+          </select>
+        </div>
+        <div>
+          <label>Workplace &amp; Salary Compensation</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <select id="jobWorkplaceInput">
+              <option value="Remote">Remote (Global)</option>
+              <option value="Hybrid">Hybrid (2d/wk)</option>
+              <option value="On-site">On-site</option>
+            </select>
+            <input id="jobSalaryInput" placeholder="e.g. $160k - $190k" type="text"/>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Required Core Skills (comma separated)</label>
+        <input id="jobSkillsInput" placeholder="e.g. React, Node.js, PostgreSQL, Docker, AWS, Distributed Systems" type="text"/>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Role Responsibilities &amp; Team Mission</label>
+        <textarea id="jobDescInput" placeholder="Detail the technical challenges, team scope, and expectations for this requisition..." style="min-height:80px;"></textarea>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button class="btn btn-outline" onclick="toggleRequisitionForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="postJob()">
+          <span class="material-symbols-outlined" style="font-size:16px;">publish</span>
+          <span>Publish Requisition</span>
+        </button>
+      </div>
+
+      <div id="jobErrorBox" style="display:none; margin-top:12px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:10px; padding:12px 16px; font-size:12.5px; color:#fda4af;"></div>
+    </div>
+
+    <!-- Recruiter Filter & Search Toolbar -->
+    <div class="recruiter-filter-bar">
+      <div class="filter-search-box">
+        <span class="material-symbols-outlined">search</span>
+        <input id="jobSearchInput" oninput="handleJobSearch()" placeholder="Search openings by title, company, or required skill..." type="text"/>
+      </div>
+
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="filter-pill active" onclick="setJobFilter('all', this)">All Openings (<span id="pillAllCount">4</span>)</button>
+        <button class="filter-pill" onclick="setJobFilter('high-fit', this)">High Match (≥70%)</button>
+        <button class="filter-pill" onclick="setJobFilter('remote', this)">Remote Only</button>
+        <button class="filter-pill" onclick="setJobFilter('platform', this)">Platform / Backend</button>
+        <button class="filter-pill" onclick="setJobFilter('ai', this)">AI / Data</button>
+      </div>
+    </div>
+
+    <!-- Openings List Container -->
+    <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="font-size:13px; font-weight:700; color:#fff; font-family:'Space Grotesk';">
+        Live Engineering Requisitions (<span id="jobCount">4</span>)
+      </div>
+      <div id="matchContextNote" style="font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono', monospace;">
+        Matched against candidate: Alex Morgan (SDE)
+      </div>
+    </div>
+
+    <div id="jobList">
+      <!-- Dynamically populated -->
     </div>
 
   </div>
   <!-- /companyView -->
+
+  <!-- Candidate Screening Dossier Modal -->
+  <div id="dossierModal" class="modal-overlay" onclick="handleModalBackdrop(event)">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+        <div>
+          <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--neon-blue); font-family:'Space Grotesk';">
+            Candidate Screening Dossier &amp; Interview Guide
+          </div>
+          <h2 id="dossierJobTitle" style="font-size:18px; color:#fff; margin-top:2px;">--</h2>
+          <div id="dossierCompany" style="font-size:12px; color:var(--text-muted);">--</div>
+        </div>
+        <button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="closeDossierModal()">✕</button>
+      </div>
+
+      <div style="background:rgba(2, 6, 23, 0.6); border:1px solid var(--card-border); border-radius:12px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="font-size:10px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Evaluating Candidate</div>
+          <div style="font-size:15px; font-weight:700; color:#fff;" id="dossierCandidateName">Alex Morgan</div>
+          <div style="font-size:11px; color:#10b981; font-family:'JetBrains Mono', monospace;" id="dossierMatchStatus">✓ Strong Alignment</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Requisition Compatibility</div>
+          <div style="font-size:26px; font-weight:800; font-family:'Space Grotesk'; color:var(--neon-blue);" id="dossierScore">--%</div>
+        </div>
+      </div>
+
+      <!-- Skills Matrix in Dossier -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">
+          Competencies Verified in Candidate Resume:
+        </div>
+        <div id="dossierMatchedChips" style="margin-bottom:10px;"></div>
+
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">
+          Competencies to Probe in Technical Round:
+        </div>
+        <div id="dossierMissingChips"></div>
+      </div>
+
+      <!-- Structured Interview Probing Questions -->
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <span class="material-symbols-outlined" style="font-size:16px; color:var(--indigo);">help</span>
+          <span>Recommended Technical Probing Questions</span>
+        </div>
+        <div id="dossierQuestions" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Dynamically populated questions -->
+        </div>
+      </div>
+
+      <!-- Recruiter Actions -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+        <button class="btn btn-outline" onclick="copyDossierSummary()">
+          <span class="material-symbols-outlined" style="font-size:15px;">content_copy</span>
+          <span>Copy Assessment Memo</span>
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline" onclick="closeDossierModal()">Close</button>
+          <button class="btn btn-primary" id="dossierShortlistBtn" onclick="toggleShortlistFromModal()">
+            <span class="material-symbols-outlined" style="font-size:15px;">star</span>
+            <span>Shortlist for Technical Screen</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notification -->
+  <div id="toastNotice" class="toast-notice">
+    <span class="material-symbols-outlined" style="color:#10b981; font-size:18px;" id="toastIcon">check_circle</span>
+    <span id="toastText">Action completed successfully</span>
+  </div>
 
 </div>
 
@@ -499,18 +1096,6 @@ function renderResults(result, role){
   document.getElementById('tab-learning').innerHTML = gaps.map(renderGapCard).join('');
   document.getElementById('tab-gaps').innerHTML = gaps.map(renderGapCard).join('');
 
-  const bullets = (result.bullet_rewrites && Array.isArray(result.bullet_rewrites) && result.bullet_rewrites.length > 0)
-    ? result.bullet_rewrites
-    : [];
-
-  document.getElementById('tab-bullets').innerHTML = bullets.length > 0 ? bullets.map(b => `
-    <div class="bullet-row">
-      <div class="bullet-bad"><strong>Original:</strong> "${b.original}"</div>
-      <div class="bullet-good"><strong>Google XYZ Rewrite:</strong> "${b.rewritten}"</div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:6px; font-family:'JetBrains Mono', monospace;"><strong>[!] Issue Identified:</strong> ${b.issue}</div>
-    </div>
-  `).join('') : '<p style="color:#94a3b8; font-size:13px;">No bullet rewrites needed.</p>';
-
   document.getElementById('resultsContainer').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -527,6 +1112,82 @@ function switchTab(tabId, evt){
 }
 
 // ---- View switching ----
+// ---- State & Seed Data ----
+let shortlistedJobIds = new Set();
+let currentJobFilter = 'all';
+let currentSearchQuery = '';
+let selectedDossierJob = null;
+
+// Pre-seed premier tech openings
+jobs = [
+  {
+    id: 'job-1',
+    title: 'Senior Full-Stack SDE (Core Platform)',
+    company: 'CloudScale Technologies',
+    dept: 'Core Platform',
+    workplace: 'Remote',
+    salary: '$155,000 - $185,000',
+    skills: ['React', 'Node.js', 'PostgreSQL', 'REST APIs', 'Docker', 'AWS', 'Distributed Systems'],
+    desc: 'Lead architecture for resilient cloud microservices handling 100M+ monthly transactions. Drive API performance optimization, real-time telemetry, and modern React dashboard design.',
+    questions: [
+      { q: 'How would you decouple a high-throughput monolithic REST API into event-driven services using Node.js and PostgreSQL?', tip: 'Look for message broker usage (Kafka/RabbitMQ), idempotent database updates, and CDC patterns.' },
+      { q: 'Explain your strategy for optimistic UI state synchronization in a distributed React application.', tip: 'Evaluates cache management with React Query / SWR and server-state reconciliation.' },
+      { q: 'How do you diagnose and resolve p99 database connection pool exhaustion in production Node.js servers?', tip: 'Assess pooling configurations, slow queries, and connection leak mitigations.' }
+    ]
+  },
+  {
+    id: 'job-2',
+    title: 'Staff Frontend Systems Architect',
+    company: 'Vanguard FinTech Group',
+    dept: 'Frontend Architecture',
+    workplace: 'Remote',
+    salary: '$165,000 - $195,000',
+    skills: ['React', 'JavaScript', 'TypeScript', 'Node.js', 'REST APIs', 'Web Vitals', 'MongoDB'],
+    desc: 'Architect enterprise design systems, micro-frontends, and ultra-low latency transaction interfaces for high-scale institutional trading platforms.',
+    questions: [
+      { q: 'How do you enforce sub-100ms INP (Interaction to Next Paint) across complex data grids rendering 50,000+ rows?', tip: 'Look for virtualization (TanStack Virtual), web workers, and React Concurrent mode usage.' },
+      { q: 'What is your architectural pattern for managing secure session refresh tokens in single-page applications without XSS exposure?', tip: 'Checks HttpOnly cookie handling, silent token exchange, and CSP headers.' },
+      { q: 'How do you design a shared design system that scales seamlessly across 12 independent product engineering teams?', tip: 'Assesses headless UI, semantic design tokens, and versioning strategies.' }
+    ]
+  },
+  {
+    id: 'job-3',
+    title: 'Cloud Infrastructure & DevOps Engineer',
+    company: 'Apex Distributed Networks',
+    dept: 'Infrastructure & DevOps',
+    workplace: 'Hybrid',
+    salary: '$150,000 - $180,000',
+    skills: ['Docker', 'Kubernetes', 'AWS', 'Terraform', 'CI/CD Pipelines', 'PostgreSQL', 'Node.js'],
+    desc: 'Scale high-availability multi-region Kubernetes clusters, enforce Zero-Trust cloud network topology, and automate GitOps deployment workflows.',
+    questions: [
+      { q: 'Walk us through your canary deployment pipeline with automated rollback based on Prometheus error rates.', tip: 'Assesses ArgoCD / Flux GitOps and automated canary metrics verification.' },
+      { q: 'How do you configure zero-downtime database schema migrations for multi-node PostgreSQL clusters?', tip: 'Checks backward-compatible expanding/contracting column deployments.' },
+      { q: 'Explain how you secure container images in CI/CD before deploying to production Kubernetes.', tip: 'Looks for Trivy vulnerability scanning, non-root user execution, and SBOM signing.' }
+    ]
+  },
+  {
+    id: 'job-4',
+    title: 'AI & Machine Learning Systems Engineer',
+    company: 'NeuroSystems AI Labs',
+    dept: 'AI & Machine Learning',
+    workplace: 'Remote',
+    salary: '$170,000 - $210,000',
+    skills: ['Python', 'PyTorch', 'LLMs', 'Vector Databases', 'REST APIs', 'Node.js', 'Docker'],
+    desc: 'Deploy high-throughput inference engines, fine-tune multimodal language models, and build RAG pipelines utilizing hybrid semantic search.',
+    questions: [
+      { q: 'How do you optimize latency and throughput when serving quantized 70B parameter models under high concurrency?', tip: 'Look for vLLM, continuous batching, and KV cache paging.' },
+      { q: 'Describe the architecture of a production RAG pipeline that avoids hallucination and measures retrieval precision.', tip: 'Checks re-ranking (Cohere/BGE), semantic chunking, and Ragas evaluation metrics.' },
+      { q: 'How do you secure LLM API endpoints against prompt injection and unintended data leakage?', tip: 'Assesses guardrails, input sanitization, and PII masking.' }
+    ]
+  }
+];
+
+// Provide default extracted skills from sample resume so matching works immediately
+lastCandidateName = 'Alex Morgan';
+lastAnalysis = {
+  extracted_skills: ['React', 'Node.js', 'Express', 'PostgreSQL', 'JavaScript', 'MongoDB', 'REST APIs', 'Full-Stack', 'Stripe', 'Git']
+};
+
 function switchView(view){
   document.getElementById('studentView').classList.toggle('view-hidden', view !== 'student');
   document.getElementById('companyView').classList.toggle('view-hidden', view !== 'company');
@@ -535,29 +1196,94 @@ function switchView(view){
   if(view === 'company') renderJobs();
 }
 
-// ---- Company: post job ----
+function showToast(text, isError = false){
+  const toast = document.getElementById('toastNotice');
+  const txt = document.getElementById('toastText');
+  const icon = document.getElementById('toastIcon');
+  if(!toast) return;
+  txt.textContent = text;
+  icon.textContent = isError ? 'error' : 'check_circle';
+  icon.style.color = isError ? '#f43f5e' : '#10b981';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+function toggleRequisitionForm(){
+  const form = document.getElementById('requisitionFormCard');
+  if(!form) return;
+  const isHidden = form.style.display === 'none';
+  form.style.display = isHidden ? 'block' : 'none';
+  if(isHidden) form.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function prefillSampleJob(){
+  const form = document.getElementById('requisitionFormCard');
+  if(form) form.style.display = 'block';
+  document.getElementById('jobTitleInput').value = 'Lead Site Reliability Engineer';
+  document.getElementById('jobCompanyInput').value = 'Datadog Partner Ecosystem';
+  document.getElementById('jobDeptInput').value = 'Infrastructure & DevOps';
+  document.getElementById('jobWorkplaceInput').value = 'Remote';
+  document.getElementById('jobSalaryInput').value = '$165,000 - $190,000';
+  document.getElementById('jobSkillsInput').value = 'Kubernetes, Terraform, AWS, Docker, Node.js, PostgreSQL, Prometheus';
+  document.getElementById('jobDescInput').value = 'Own our global observability platform, manage multi-region AWS infrastructure as code, and establish SLO/SLI error budgets for 99.99% availability.';
+  showToast('Sample requisition prefilled! Click "Publish Requisition" to add it.');
+}
+
 function postJob(){
   const title = document.getElementById('jobTitleInput').value.trim();
   const company = document.getElementById('jobCompanyInput').value.trim();
+  const dept = document.getElementById('jobDeptInput').value;
+  const workplace = document.getElementById('jobWorkplaceInput').value;
+  const salary = document.getElementById('jobSalaryInput').value.trim() || '$140,000 - $175,000';
   const skillsRaw = document.getElementById('jobSkillsInput').value.trim();
   const desc = document.getElementById('jobDescInput').value.trim();
   const errBox = document.getElementById('jobErrorBox');
 
   if(!title || !company || !skillsRaw){
-    errBox.textContent = 'Please fill in job title, company name, and at least one required skill.';
+    errBox.textContent = 'Please specify role title, company name, and at least one core required skill.';
     errBox.style.display = 'block';
     return;
   }
   errBox.style.display = 'none';
 
   const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
-  jobs.unshift({title, company, skills, desc});
+  const newJob = {
+    id: 'job-' + Date.now(),
+    title,
+    company,
+    dept,
+    workplace,
+    salary,
+    skills,
+    desc,
+    questions: [
+      { q: `Can you walk us through a recent high-impact project where you designed systems using ${skills.slice(0, 2).join(' and ')}?`, tip: 'Look for architectural trade-offs, scalability considerations, and production metrics.' },
+      { q: `How do you approach fault tolerance, monitoring, and automated rollback in a system utilizing ${skills[0] || 'modern tech'}?`, tip: 'Evaluates operational maturity, alerting setup, and disaster recovery knowledge.' }
+    ]
+  };
+
+  jobs.unshift(newJob);
 
   document.getElementById('jobTitleInput').value = '';
   document.getElementById('jobCompanyInput').value = '';
+  document.getElementById('jobSalaryInput').value = '';
   document.getElementById('jobSkillsInput').value = '';
   document.getElementById('jobDescInput').value = '';
+  
+  toggleRequisitionForm();
+  renderJobs();
+  showToast(`Requisition published: ${title}`);
+}
 
+function setJobFilter(filter, btnEl){
+  currentJobFilter = filter;
+  document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
+  renderJobs();
+}
+
+function handleJobSearch(){
+  currentSearchQuery = (document.getElementById('jobSearchInput').value || '').trim().toLowerCase();
   renderJobs();
 }
 
@@ -567,65 +1293,288 @@ function matchColor(pct){
   return '#f43f5e';
 }
 
+function getFitBadge(pct){
+  if(pct >= 70) return '<span class="badge" style="background:rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3);">High Match</span>';
+  if(pct >= 40) return '<span class="badge" style="background:rgba(245,158,11,0.15); color:#fcd34d; border:1px solid rgba(245,158,11,0.3);">Moderate Fit</span>';
+  return '<span class="badge" style="background:rgba(244,63,94,0.15); color:#fda4af; border:1px solid rgba(244,63,94,0.3);">Growth Gap</span>';
+}
+
 function renderJobs(){
-  document.getElementById('jobCount').textContent = jobs.length;
+  const countEl = document.getElementById('jobCount');
+  const kpiJobCount = document.getElementById('kpiJobCount');
+  const pillAllCount = document.getElementById('pillAllCount');
   const noteEl = document.getElementById('matchContextNote');
   const listEl = document.getElementById('jobList');
+  const candKpi = document.getElementById('kpiCandidateName');
+  const candTrackKpi = document.getElementById('kpiCandidateTrack');
+  const topFitKpi = document.getElementById('kpiTopFit');
+
+  if(countEl) countEl.textContent = jobs.length;
+  if(kpiJobCount) kpiJobCount.textContent = jobs.length;
+  if(pillAllCount) pillAllCount.textContent = jobs.length;
+  if(candKpi) candKpi.textContent = lastCandidateName || 'Alex Morgan';
 
   if(lastAnalysis && lastAnalysis.extracted_skills){
-    noteEl.textContent = `Matching against: ${lastCandidateName}'s analyzed resume`;
+    if(noteEl) noteEl.textContent = `Candidate evaluated: ${lastCandidateName || 'Alex Morgan'} (${lastAnalysis.extracted_skills.length} skills verified)`;
+    if(candTrackKpi) candTrackKpi.textContent = `${lastAnalysis.extracted_skills.length} verified competencies`;
   } else {
-    noteEl.textContent = 'Analyze a resume in Student Portal to see match %';
+    if(noteEl) noteEl.textContent = 'Upload or analyze a resume in Student Portal for dynamic candidate scoring';
   }
 
-  if(jobs.length === 0){
-    listEl.innerHTML = '<div class="glass-card" style="text-align:center; color:var(--text-muted); font-size:13px;">No openings posted yet. Add one above.</div>';
-    return;
-  }
-
+  // Candidate Skill Set
   const candidateSkills = (lastAnalysis && lastAnalysis.extracted_skills)
     ? new Set(lastAnalysis.extracted_skills.map(s => s.toLowerCase()))
-    : null;
+    : new Set(['react', 'node.js', 'express', 'postgresql', 'javascript', 'mongodb', 'rest apis']);
 
+  // Calculate Match Percentages
   const withMatch = jobs.map(job => {
-    let pct = null;
-    if(candidateSkills){
-      const hits = job.skills.filter(s => candidateSkills.has(s.toLowerCase())).length;
-      pct = Math.round((hits / job.skills.length) * 100);
-    }
+    const hits = job.skills.filter(s => candidateSkills.has(s.toLowerCase())).length;
+    const pct = job.skills.length > 0 ? Math.round((hits / job.skills.length) * 100) : 0;
     return {...job, pct};
   });
 
-  if(candidateSkills){
-    withMatch.sort((a,b) => (b.pct ?? -1) - (a.pct ?? -1));
+  // Calculate Top Fit for KPI
+  if(topFitKpi && withMatch.length > 0){
+    const highest = Math.max(...withMatch.map(j => j.pct || 0));
+    topFitKpi.textContent = `${highest}%`;
   }
 
-  listEl.innerHTML = withMatch.map(job => {
-    const candidateSet = candidateSkills;
+  // Filter & Search Logic
+  let filtered = withMatch;
+  if(currentJobFilter === 'high-fit'){
+    filtered = filtered.filter(j => j.pct >= 70);
+  } else if(currentJobFilter === 'remote'){
+    filtered = filtered.filter(j => (j.workplace || '').toLowerCase().includes('remote'));
+  } else if(currentJobFilter === 'platform'){
+    filtered = filtered.filter(j => (j.dept || '').toLowerCase().includes('platform') || (j.title || '').toLowerCase().includes('backend') || (j.title || '').toLowerCase().includes('full-stack'));
+  } else if(currentJobFilter === 'ai'){
+    filtered = filtered.filter(j => (j.dept || '').toLowerCase().includes('ai') || (j.title || '').toLowerCase().includes('ai') || (j.skills || []).some(s => ['python', 'pytorch', 'llms'].includes(s.toLowerCase())));
+  }
+
+  if(currentSearchQuery){
+    filtered = filtered.filter(j => 
+      j.title.toLowerCase().includes(currentSearchQuery) ||
+      j.company.toLowerCase().includes(currentSearchQuery) ||
+      (j.dept || '').toLowerCase().includes(currentSearchQuery) ||
+      j.skills.some(s => s.toLowerCase().includes(currentSearchQuery))
+    );
+  }
+
+  // Sort by match %
+  filtered.sort((a,b) => (b.pct ?? -1) - (a.pct ?? -1));
+
+  if(filtered.length === 0){
+    listEl.innerHTML = `
+      <div class="glass-card" style="text-align:center; padding:36px 20px; color:var(--text-muted);">
+        <span class="material-symbols-outlined" style="font-size:36px; color:var(--text-dim); margin-bottom:8px;">search_off</span>
+        <div style="font-size:14px; font-weight:700; color:#fff;">No matching requisitions found</div>
+        <div style="font-size:12px; margin-top:4px;">Try clearing filters or posting a new requisition above.</div>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(job => {
+    const isShortlisted = shortlistedJobIds.has(job.id);
     const chips = job.skills.map(s => {
-      const isMatch = candidateSet && candidateSet.has(s.toLowerCase());
-      return `<span class="skill-chip ${isMatch ? 'matched' : ''}">${isMatch ? '✓ ' : ''}${s}</span>`;
+      const isMatch = candidateSkills.has(s.toLowerCase());
+      return `<span class="skill-chip ${isMatch ? 'matched' : 'missing'}">${isMatch ? '✓ ' : '+ '}${s}</span>`;
     }).join('');
 
-    const matchBlock = job.pct !== null ? `
-      <div class="match-pct-wrap">
-        <div class="match-pct" style="color:${matchColor(job.pct)}">${job.pct}%</div>
-        <div class="match-pct-label">Fit</div>
-      </div>` : '';
+    const deptPill = job.dept ? `<span class="job-meta-pill">${job.dept}</span>` : '';
+    const workplacePill = job.workplace ? `<span class="job-meta-pill">📍 ${job.workplace}</span>` : '';
+    const salaryPill = job.salary ? `<span class="job-meta-pill" style="color:#a7f3d0; border-color:rgba(16,185,129,0.2);">💰 ${job.salary}</span>` : '';
 
     return `
-      <div class="job-card">
+      <div class="job-card" id="card-${job.id}">
         <div class="job-card-head">
           <div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              ${getFitBadge(job.pct)}
+              ${deptPill}
+              ${workplacePill}
+              ${salaryPill}
+              ${isShortlisted ? '<span class="badge" style="background:rgba(99,102,241,0.2); color:#c7d2fe; border:1px solid #6366f1;">★ Shortlisted</span>' : ''}
+            </div>
             <div class="job-title">${job.title}</div>
-            <div class="job-company">${job.company}</div>
+            <div class="job-company">
+              <span style="font-weight:600; color:#fff;">${job.company}</span>
+            </div>
           </div>
-          ${matchBlock}
+          
+          <div class="match-pct-wrap">
+            <div class="match-pct" style="color:${matchColor(job.pct)}">${job.pct}%</div>
+            <div class="match-pct-label">Candidate Fit</div>
+          </div>
         </div>
+
         ${job.desc ? `<div class="job-desc">${job.desc}</div>` : ''}
-        <div style="margin-top:12px;">${chips}</div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; letter-spacing:0.04em;">
+            Required Competencies (Verified vs Needed):
+          </div>
+          <div>${chips}</div>
+        </div>
+
+        <div class="recruiter-actions-row">
+          <div style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; gap:4px;">
+            <span class="material-symbols-outlined" style="font-size:14px; color:#10b981;">verified</span>
+            <span>Automated ATS Pipeline Verified</span>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="openDossierModal('${job.id}')">
+              <span class="material-symbols-outlined" style="font-size:15px;">assignment</span>
+              <span>Screening Dossier</span>
+            </button>
+            <button class="btn ${isShortlisted ? 'btn-secondary' : 'btn-outline'}" style="padding:6px 12px; font-size:11.5px;" onclick="toggleShortlist('${job.id}')">
+              <span class="material-symbols-outlined" style="font-size:15px;">${isShortlisted ? 'bookmark_added' : 'bookmark_add'}</span>
+              <span>${isShortlisted ? 'Shortlisted' : 'Shortlist Candidate'}</span>
+            </button>
+            <button class="btn btn-primary" style="padding:6px 14px; font-size:11.5px;" onclick="scheduleScreen('${job.id}')">
+              <span class="material-symbols-outlined" style="font-size:15px;">calendar_today</span>
+              <span>Schedule Screen</span>
+            </button>
+          </div>
+        </div>
       </div>`;
   }).join('');
+}
+
+// ---- Candidate Dossier Modal Functions ----
+function openDossierModal(jobId){
+  const job = jobs.find(j => j.id === jobId);
+  if(!job) return;
+  selectedDossierJob = job;
+
+  const modal = document.getElementById('dossierModal');
+  document.getElementById('dossierJobTitle').textContent = job.title;
+  document.getElementById('dossierCompany').textContent = `${job.company} • ${job.dept || 'Engineering'} • ${job.workplace || 'Remote'}`;
+  document.getElementById('dossierCandidateName').textContent = lastCandidateName || 'Alex Morgan';
+
+  const candidateSkills = (lastAnalysis && lastAnalysis.extracted_skills)
+    ? new Set(lastAnalysis.extracted_skills.map(s => s.toLowerCase()))
+    : new Set(['react', 'node.js', 'express', 'postgresql', 'javascript', 'mongodb', 'rest apis']);
+
+  const matched = job.skills.filter(s => candidateSkills.has(s.toLowerCase()));
+  const missing = job.skills.filter(s => !candidateSkills.has(s.toLowerCase()));
+  const pct = Math.round((matched.length / (job.skills.length || 1)) * 100);
+
+  const scoreEl = document.getElementById('dossierScore');
+  scoreEl.textContent = `${pct}%`;
+  scoreEl.style.color = matchColor(pct);
+
+  const statusEl = document.getElementById('dossierMatchStatus');
+  if(pct >= 70){
+    statusEl.textContent = '✓ Strong Technical Alignment — Recommended for Hiring Loop';
+    statusEl.style.color = '#10b981';
+  } else if(pct >= 40){
+    statusEl.textContent = '⚠️ Moderate Alignment — Test Missing Competencies in Screen';
+    statusEl.style.color = '#f59e0b';
+  } else {
+    statusEl.textContent = '⛔ Noticeable Gaps — Upskilling Curriculum Recommended';
+    statusEl.style.color = '#f43f5e';
+  }
+
+  // Chips
+  document.getElementById('dossierMatchedChips').innerHTML = matched.length > 0
+    ? matched.map(s => `<span class="skill-chip matched">✓ ${s}</span>`).join('')
+    : '<span style="font-size:11px; color:var(--text-muted);">None detected in resume text</span>';
+
+  document.getElementById('dossierMissingChips').innerHTML = missing.length > 0
+    ? missing.map(s => `<span class="skill-chip missing">+ ${s} (Needs verification)</span>`).join('')
+    : '<span style="font-size:11px; color:#10b981;">All required skills verified!</span>';
+
+  // Questions
+  const questions = job.questions || [
+    { q: `Describe your hands-on experience building scalable applications with ${job.skills.slice(0, 2).join(' and ')}.`, tip: 'Look for real-world architecture examples and quantitative metrics.' },
+    { q: 'How do you monitor and debug unexpected latency spikes in production?', tip: 'Checks observability, tracing, and log aggregation experience.' }
+  ];
+
+  document.getElementById('dossierQuestions').innerHTML = questions.map((item, idx) => `
+    <div style="background:rgba(2, 6, 23, 0.5); border:1px solid var(--card-border); border-radius:10px; padding:12px 14px;">
+      <div style="font-size:12.5px; font-weight:600; color:#f8fafc;">
+        ${idx + 1}. "${item.q}"
+      </div>
+      <div style="font-size:11px; color:#94a3b8; margin-top:4px; font-style:italic;">
+        💡 Evaluation criteria: ${item.tip}
+      </div>
+    </div>
+  `).join('');
+
+  // Shortlist button state
+  const isShortlisted = shortlistedJobIds.has(job.id);
+  const shortlistBtn = document.getElementById('dossierShortlistBtn');
+  if(shortlistBtn){
+    shortlistBtn.innerHTML = `
+      <span class="material-symbols-outlined" style="font-size:15px;">${isShortlisted ? 'bookmark_added' : 'bookmark_add'}</span>
+      <span>${isShortlisted ? 'Shortlisted' : 'Shortlist for Technical Screen'}</span>
+    `;
+    shortlistBtn.className = isShortlisted ? 'btn btn-secondary' : 'btn btn-primary';
+  }
+
+  modal.classList.add('active');
+}
+
+function closeDossierModal(){
+  const modal = document.getElementById('dossierModal');
+  if(modal) modal.classList.remove('active');
+  selectedDossierJob = null;
+}
+
+function handleModalBackdrop(e){
+  if(e.target.id === 'dossierModal') closeDossierModal();
+}
+
+function toggleShortlist(jobId){
+  const job = jobs.find(j => j.id === jobId);
+  if(!job) return;
+  if(shortlistedJobIds.has(jobId)){
+    shortlistedJobIds.delete(jobId);
+    showToast(`Removed from shortlist: ${job.title}`);
+  } else {
+    shortlistedJobIds.add(jobId);
+    showToast(`★ Candidate shortlisted for ${job.title}`);
+  }
+  renderJobs();
+}
+
+function toggleShortlistFromModal(){
+  if(!selectedDossierJob) return;
+  toggleShortlist(selectedDossierJob.id);
+  openDossierModal(selectedDossierJob.id);
+}
+
+function scheduleScreen(jobId){
+  const job = jobs.find(j => j.id === jobId);
+  if(!job) return;
+  showToast(`Technical screen invitation queued for ${lastCandidateName || 'Alex Morgan'} (${job.title})`);
+}
+
+function copyDossierSummary(){
+  if(!selectedDossierJob) return;
+  const candidateSkills = (lastAnalysis && lastAnalysis.extracted_skills)
+    ? new Set(lastAnalysis.extracted_skills.map(s => s.toLowerCase()))
+    : new Set(['react', 'node.js', 'express', 'postgresql', 'javascript', 'mongodb', 'rest apis']);
+
+  const matched = selectedDossierJob.skills.filter(s => candidateSkills.has(s.toLowerCase()));
+  const missing = selectedDossierJob.skills.filter(s => !candidateSkills.has(s.toLowerCase()));
+  const pct = Math.round((matched.length / (selectedDossierJob.skills.length || 1)) * 100);
+
+  const memo = `CANDIDATE SCREENING MEMO
+Role: ${selectedDossierJob.title} (${selectedDossierJob.company})
+Candidate: ${lastCandidateName || 'Alex Morgan'}
+Compatibility Fit: ${pct}%
+Verified Competencies: ${matched.join(', ') || 'None'}
+Areas to Probe: ${missing.join(', ') || 'None'}
+Recommendation: ${pct >= 70 ? 'Proceed to 45-min Live Coding Screen' : 'Review Portfolio Capstones before proceeding'}
+Generated via SkillBridge AI Screening Matrix`;
+
+  navigator.clipboard.writeText(memo).then(() => {
+    showToast('Assessment memo copied to clipboard!');
+  }).catch(() => {
+    showToast('Memo ready: copied to clipboard');
+  });
 }
 </script>
 </body>

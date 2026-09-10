@@ -131,7 +131,7 @@ export default function App() {
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">
-                    Live resume scorer, Google XYZ bullet rewrites, and student & company portals connected to your backend API.
+                    Live resume scorer, skill gaps & courses, and student & company portals connected to your backend API.
                   </p>
                 </div>
               </div>

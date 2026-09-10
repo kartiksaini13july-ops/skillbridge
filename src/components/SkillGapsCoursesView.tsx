@@ -262,7 +262,7 @@ export const SkillGapsCoursesView: React.FC<SkillGapsCoursesViewProps> = ({
                       {gap.capstone_line && (
                         <div>
                           <span className="text-[10px] font-semibold text-slate-400 block mb-1">
-                            Copyable Google XYZ Formula Resume Bullet:
+                            Copyable Portfolio Resume Bullet:
                           </span>
                           <div className="relative group bg-white p-2.5 rounded-lg border border-slate-200 font-mono text-[11.5px] text-slate-700 flex items-start justify-between gap-2">
                             <span>"{gap.capstone_line}"</span>

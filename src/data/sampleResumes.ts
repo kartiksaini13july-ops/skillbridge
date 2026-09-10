@@ -276,11 +276,11 @@ B.S. in Industrial Engineering | Cornell University, Ithaca, NY | 2011 - 2015`,
 export const apiEndpointsList: ApiEndpointDoc[] = [
   {
     id: "skillbridge-analyze",
-    name: "SkillBridge AI: Scorer, Learning Paths & Rewrites",
+    name: "SkillBridge AI: Scorer & Learning Paths",
     method: "POST",
     path: "/api/analyze",
-    summary: "Evaluates resume for specific target role, returns score, sub-scores, skill gaps with courses, and Google XYZ rewrites.",
-    description: "Production endpoint used by the SkillBridge AI portal. Analyzes raw resume text against a target career track (e.g. Senior Full-Stack SDE) and produces ATS score, category ratings, recommended courses, and Google XYZ bullet point rewrites.",
+    summary: "Evaluates resume for specific target role, returns score, sub-scores, and skill gaps with courses.",
+    description: "Production endpoint used by the SkillBridge AI portal. Analyzes raw resume text against a target career track (e.g. Senior Full-Stack SDE) and produces ATS score, category ratings, and recommended courses.",
     requestBodySchema: {
       resumeText: "string (raw resume text, markdown, or extracted content)",
       role: "string (target career track, e.g. 'Senior Full-Stack SDE', 'AI / ML Engineer')"
@@ -319,7 +319,7 @@ export const apiEndpointsList: ApiEndpointDoc[] = [
         {
           original: "Worked on the backend API and made it faster.",
           rewritten: "Engineered Node.js REST API endpoints with Redis caching, reducing p95 server latency by 42% across 250k daily active users.",
-          issue: "Lacks quantifiable metrics, technical methodology, and proactive ownership (Google XYZ formula)."
+          issue: "Lacks quantifiable metrics, technical methodology, and proactive ownership."
         }
       ]
     }

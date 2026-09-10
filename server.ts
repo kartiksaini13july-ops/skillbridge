@@ -243,7 +243,7 @@ app.get('/api/health', (req, res) => {
     geminiConfigured: hasKey,
     model: 'gemini-3.1-flash-lite',
     endpoints: [
-      { method: 'POST', path: '/api/analyze', desc: 'SkillBridge AI resume scorer, skill gaps, learning paths, and Google XYZ rewrites' },
+      { method: 'POST', path: '/api/analyze', desc: 'SkillBridge AI resume scorer, skill gaps, and learning paths' },
       { method: 'POST', path: '/api/resume/parse', desc: 'Parse resume to structured JSON' },
       { method: 'POST', path: '/api/resume/analyze', desc: 'ATS scoring, metrics analysis, strengths & gaps' },
       { method: 'POST', path: '/api/resume/job-match', desc: 'Match resume against job description' },
