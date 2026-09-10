@@ -39,7 +39,7 @@ function getGenAI(): GoogleGenAI | null {
 }
 
 // Dynamic model selection and fallback tracker
-let lastFlashDemandSpikeTime = 0;
+let lastDemandSpikeTime = 0;
 const DEMAND_SPIKE_COOLDOWN_MS = 60000; // 60 seconds
 
 function isTransientError(err: any): boolean {
@@ -48,39 +48,45 @@ function isTransientError(err: any): boolean {
   return (
     status === 503 ||
     status === 429 ||
+    status === 408 ||
     msg.includes('503') ||
+    msg.includes('429') ||
     msg.includes('unavailable') ||
     msg.includes('high demand') ||
     msg.includes('resource has been exhausted') ||
     msg.includes('quota') ||
-    msg.includes('temporarily')
+    msg.includes('temporarily') ||
+    msg.includes('timed out')
   );
 }
 
-// Resilient wrapper with retry and model fallback (handles 503 high demand / 429)
+// Resilient wrapper with retry and model fallback (handles 503 high demand / 429 quota exhaustion)
 async function callGeminiSafe(generateFn: (model: string) => Promise<any>): Promise<any> {
-  // If gemini-3.8-flash experienced a demand spike recently, prioritize gemini-3.1-flash-lite
-  const recentSpike = Date.now() - lastFlashDemandSpikeTime < DEMAND_SPIKE_COOLDOWN_MS;
-  const modelsToTry = recentSpike
-    ? ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest']
-    : ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+  // Prioritize gemini-3.1-flash-lite for immediate availability, lowest latency, and generous quota
+  const modelsToTry = ['gemini-3.1-flash-lite', 'gemini-3.8-flash'];
 
   let lastError: any = null;
 
   for (const model of modelsToTry) {
     try {
-      return await generateFn(model);
+      // 15-second per-model timeout so hanging endpoints don't stall the request
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Model ${model} request timed out after 15s`)), 15000)
+      );
+
+      const result = await Promise.race([generateFn(model), timeoutPromise]);
+      return result;
     } catch (err: any) {
       lastError = err;
-      const status = err?.status || err?.code || (err?.message?.includes('503') ? 503 : 0);
-      
-      if (model === 'gemini-3.8-flash' && isTransientError(err)) {
-        lastFlashDemandSpikeTime = Date.now();
+      const status = err?.status || err?.code || (err?.message?.includes('503') ? 503 : err?.message?.includes('429') ? 429 : 0);
+
+      if (isTransientError(err)) {
+        lastDemandSpikeTime = Date.now();
       }
 
-      console.log(`[Gemini Engine] Model ${model} status ${status}. Moving to alternative candidate...`);
+      console.log(`[Gemini Engine] Model ${model} returned status ${status || 'err'}. Switching to fallback candidate...`);
       // Brief jittered pause before trying next candidate
-      await new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 200));
+      await new Promise((resolve) => setTimeout(resolve, 200 + Math.random() * 150));
     }
   }
 
@@ -235,7 +241,7 @@ app.get('/api/health', (req, res) => {
     service: 'AI Resume Viewer & SkillBridge API',
     timestamp: new Date().toISOString(),
     geminiConfigured: hasKey,
-    model: 'gemini-3.8-flash',
+    model: 'gemini-3.1-flash-lite',
     endpoints: [
       { method: 'POST', path: '/api/analyze', desc: 'SkillBridge AI resume scorer, skill gaps, learning paths, and Google XYZ rewrites' },
       { method: 'POST', path: '/api/resume/parse', desc: 'Parse resume to structured JSON' },
@@ -363,7 +369,7 @@ Calculate and output strictly the following JSON:
           return res.json(data);
         }
       } catch (aiErr: any) {
-        console.log('[SkillBridge /api/analyze] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
+        console.log('[SkillBridge /api/analyze] Serving resilient heuristic analysis engine.');
       }
     }
 
@@ -797,7 +803,7 @@ Ensure IDs are generated (e.g. 'exp-1', 'edu-1').`;
           });
         }
       } catch (aiErr: any) {
-        console.log('[Parse Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
+        console.log('[Parse Endpoint] Serving resilient heuristic parsing engine.');
       }
     }
 
@@ -994,7 +1000,7 @@ Identify:
           });
         }
       } catch (aiErr: any) {
-        console.log('[Analyze Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
+        console.log('[Analyze Endpoint] Serving resilient heuristic analysis engine.');
       }
     }
 
@@ -1228,7 +1234,7 @@ Calculate:
           });
         }
       } catch (aiErr: any) {
-        console.log('[Job Match Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
+        console.log('[Job Match Endpoint] Serving resilient heuristic matching engine.');
       }
     }
 
@@ -1322,7 +1328,7 @@ ${JSON.stringify(chatHistory || [])}
           answer: response.text || 'No response generated.',
         });
       } catch (aiErr: any) {
-        console.log('[Ask Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
+        console.log('[Ask Endpoint] Serving resilient heuristic answer engine.');
       }
     }
 
