@@ -150,3 +150,14 @@ export interface ApiEndpointDoc {
   sampleRequestBody?: Record<string, any>;
   sampleResponse: Record<string, any>;
 }
+
+export interface SkillRadarDimension {
+  axis: string;
+  candidateScore: number;
+  industryBenchmark: number;
+  description: string;
+  relevantSkills?: string[];
+  addressedByGap?: string;
+  courseTitle?: string;
+  courseUrl?: string;
+}

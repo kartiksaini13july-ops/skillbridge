@@ -21,12 +21,14 @@ interface AtsAuditPanelProps {
   analysis: ResumeAnalysis | null;
   loading: boolean;
   onRefreshAnalysis: () => void;
+  onOpenGaps?: () => void;
 }
 
 export const AtsAuditPanel: React.FC<AtsAuditPanelProps> = ({
   analysis,
   loading,
   onRefreshAnalysis,
+  onOpenGaps,
 }) => {
   const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null);
 
@@ -199,6 +201,16 @@ export const AtsAuditPanel: React.FC<AtsAuditPanelProps> = ({
                 </p>
               </div>
             </div>
+
+            {onOpenGaps && (
+              <button
+                onClick={onOpenGaps}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors shadow-xs"
+              >
+                <span>View D3 Skill Radar Chart</span>
+                <ExternalLink className="h-3 w-3" />
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4">

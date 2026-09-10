@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { GoogleGenAI, Type } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+import { PDFParse } from 'pdf-parse';
 
 const app = express();
 const PORT = 3000;
@@ -37,9 +38,33 @@ function getGenAI(): GoogleGenAI | null {
   return genAIInstance;
 }
 
+// Dynamic model selection and fallback tracker
+let lastFlashDemandSpikeTime = 0;
+const DEMAND_SPIKE_COOLDOWN_MS = 60000; // 60 seconds
+
+function isTransientError(err: any): boolean {
+  const status = err?.status || err?.code || 0;
+  const msg = (err?.message || '').toLowerCase();
+  return (
+    status === 503 ||
+    status === 429 ||
+    msg.includes('503') ||
+    msg.includes('unavailable') ||
+    msg.includes('high demand') ||
+    msg.includes('resource has been exhausted') ||
+    msg.includes('quota') ||
+    msg.includes('temporarily')
+  );
+}
+
 // Resilient wrapper with retry and model fallback (handles 503 high demand / 429)
 async function callGeminiSafe(generateFn: (model: string) => Promise<any>): Promise<any> {
-  const modelsToTry = ['gemini-3.8-flash', 'gemini-flash-latest'];
+  // If gemini-3.8-flash experienced a demand spike recently, prioritize gemini-3.1-flash-lite
+  const recentSpike = Date.now() - lastFlashDemandSpikeTime < DEMAND_SPIKE_COOLDOWN_MS;
+  const modelsToTry = recentSpike
+    ? ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest']
+    : ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+
   let lastError: any = null;
 
   for (const model of modelsToTry) {
@@ -48,13 +73,35 @@ async function callGeminiSafe(generateFn: (model: string) => Promise<any>): Prom
     } catch (err: any) {
       lastError = err;
       const status = err?.status || err?.code || (err?.message?.includes('503') ? 503 : 0);
-      console.warn(`[Gemini Safe] Model ${model} encountered status/error: ${status}. Attempting recovery...`);
-      // Brief pause before trying next candidate
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      if (model === 'gemini-3.8-flash' && isTransientError(err)) {
+        lastFlashDemandSpikeTime = Date.now();
+      }
+
+      console.log(`[Gemini Engine] Model ${model} status ${status}. Moving to alternative candidate...`);
+      // Brief jittered pause before trying next candidate
+      await new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 200));
     }
   }
 
   throw lastError;
+}
+
+// Robust JSON parse helper with markdown fence stripping
+function safeParseJson<T = any>(text: string | undefined | null, fallback: T): T {
+  if (!text) return fallback;
+  try {
+    const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    try {
+      const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+      if (match) return JSON.parse(match[0]);
+    } catch {
+      // ignore
+    }
+    return fallback;
+  }
 }
 
 // Helper to format resume object into string for prompting
@@ -62,6 +109,113 @@ function stringifyResume(resumeInput: any): string {
   if (typeof resumeInput === 'string') return resumeInput;
   if (!resumeInput) return '';
   return JSON.stringify(resumeInput, null, 2);
+}
+
+// Extract raw text from base64 PDF using PDFParse
+async function extractTextFromBase64Pdf(base64File: string): Promise<string> {
+  try {
+    const cleanBase64 = base64File.replace(/^data:.*?;base64,/, '');
+    const fileBuffer = Buffer.from(cleanBase64, 'base64');
+    const parser = new PDFParse({ data: fileBuffer });
+    const pdfResult = await parser.getText();
+    if (pdfResult?.text && pdfResult.text.trim().length > 0) {
+      return pdfResult.text.trim();
+    }
+  } catch (err: any) {
+    console.log('[PDF Parser] Text extraction notice:', err?.message?.slice(0, 100));
+  }
+  return '';
+}
+
+// Capitalize words in name properly (including hyphenated like Mary-Jane)
+function formatProperName(str: string): string {
+  return str
+    .split(/\s+/)
+    .map((word) =>
+      word
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join('-')
+    )
+    .join(' ');
+}
+
+// Robust candidate name extractor from parsed output, resume text, or file name
+function extractCandidateName(rawName: string | undefined | null, text: string, fileName?: string): string {
+  const genericPlaceholders = [
+    'candidate name',
+    'candidate',
+    'resume',
+    'curriculum vitae',
+    'cv',
+    'profile',
+    'applicant',
+    'untitled',
+    'john doe',
+    'alex morgan',
+    'first last',
+  ];
+
+  if (rawName && typeof rawName === 'string' && rawName.trim()) {
+    const trimmed = rawName.trim().replace(/^[^a-zA-Z]+/, '');
+    if (!genericPlaceholders.includes(trimmed.toLowerCase()) && trimmed.length >= 2) {
+      return formatProperName(trimmed);
+    }
+  }
+
+  // 1. Scan first 12 lines of extracted text for a valid human name
+  const lines = (text || '')
+    .split('\n')
+    .map((l) => l.trim().replace(/^[•*\-\d.\s|]+/, '').trim())
+    .filter(Boolean);
+
+  for (const line of lines.slice(0, 12)) {
+    // Skip lines containing contact info, web links, dates, or common headers
+    if (
+      /@|https?:\/\/|\.com|\.io|\.net|\+?\d{3,}|summary|objective|skills|experience|education|projects|certifications|contact|curriculum|resume|phone|email|address|location/i.test(
+        line
+      )
+    ) {
+      continue;
+    }
+
+    const words = line.split(/\s+/).filter(Boolean);
+    // Standard person name is typically 2 to 4 words with alphabetical/hyphen/apostrophe characters
+    if (
+      words.length >= 2 &&
+      words.length <= 4 &&
+      /^[a-zA-Z\s.'-]+$/.test(line) &&
+      line.length >= 3 &&
+      line.length <= 40
+    ) {
+      if (!genericPlaceholders.includes(line.toLowerCase())) {
+        return formatProperName(line);
+      }
+    }
+  }
+
+  // 2. Check if a clean human name can be derived from the uploaded file name
+  if (fileName) {
+    const base = fileName.replace(/\.[^/.]+$/, '');
+    const cleaned = base
+      .replace(/[-_.]+/g, ' ')
+      .replace(/\b(resume|cv|curriculum|vitae|updated|latest|draft|final|official|new|202\d|201\d|v\d+)\b/gi, '')
+      .trim();
+
+    if (cleaned.length >= 3) {
+      const words = cleaned.split(/\s+/).filter(Boolean);
+      if (
+        words.length >= 1 &&
+        words.length <= 4 &&
+        /^[a-zA-Z\s.'-]+$/.test(cleaned) &&
+        !genericPlaceholders.includes(cleaned.toLowerCase())
+      ) {
+        return formatProperName(cleaned);
+      }
+    }
+  }
+
+  return rawName && rawName.trim() ? rawName.trim() : 'Candidate';
 }
 
 // Serve SkillBridge AI website directly
@@ -96,9 +250,15 @@ app.get('/api/health', (req, res) => {
 // 2. SkillBridge AI Analysis Endpoint (POST /api/analyze)
 app.post('/api/analyze', async (req, res) => {
   try {
-    const { resumeText, role } = req.body;
-    if (!resumeText || typeof resumeText !== 'string') {
-      return res.status(400).json({ error: 'Missing required `resumeText` string in request body.' });
+    const { resumeText, role, base64File } = req.body;
+    let textToAnalyze = typeof resumeText === 'string' ? resumeText.trim() : '';
+
+    if (!textToAnalyze && base64File) {
+      textToAnalyze = await extractTextFromBase64Pdf(base64File);
+    }
+
+    if (!textToAnalyze || textToAnalyze.length < 10) {
+      return res.status(400).json({ error: 'Missing required `resumeText` or `base64File` in request body.' });
     }
 
     const targetRole = role || 'Senior Full-Stack SDE';
@@ -113,7 +273,7 @@ app.post('/api/analyze', async (req, res) => {
 Analyze this candidate's resume specifically for the target role track: "${targetRole}".
 
 Resume content:
-${resumeText.slice(0, 7000)}
+${textToAnalyze.slice(0, 7000)}
 
 Calculate and output strictly the following JSON:
 1. "score": Overall score integer 0-100 reflecting fit for "${targetRole}".
@@ -198,15 +358,17 @@ Calculate and output strictly the following JSON:
           })
         );
 
-        const data = JSON.parse(response.text || '{}');
-        return res.json(data);
+        const data = safeParseJson(response.text, null);
+        if (data && data.score) {
+          return res.json(data);
+        }
       } catch (aiErr: any) {
-        console.warn('[SkillBridge /api/analyze] Gemini unavailable, using intelligent fallback:', aiErr?.message);
+        console.log('[SkillBridge /api/analyze] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
       }
     }
 
     // Heuristic fallback generator tailored to candidate resume and target role
-    const resumeLower = resumeText.toLowerCase();
+    const resumeLower = textToAnalyze.toLowerCase();
 
     // Extract skills present
     const potentialSkills = [
@@ -220,7 +382,7 @@ Calculate and output strictly the following JSON:
     }
 
     // Quantified metric check
-    const metrics = resumeText.match(/\b\d+(\.\d+)?%|\b\$\d+[\d,]*[kMBb]?|\b\d+([kMBb]|\+)?\s*(users|requests|events|clients|engineers)\b/gi) || [];
+    const metrics = textToAnalyze.match(/\b\d+(\.\d+)?%|\b\$\d+[\d,]*[kMBb]?|\b\d+([kMBb]|\+)?\s*(users|requests|events|clients|engineers)\b/gi) || [];
     const impactScore = Math.min(92, Math.max(50, 48 + metrics.length * 10));
 
     // Role-specific skill gap definitions
@@ -452,12 +614,23 @@ app.get('/api/docs', (req, res) => {
 // 4. POST /api/resume/parse
 app.post('/api/resume/parse', async (req, res) => {
   try {
-    const { resumeText, base64File, mimeType } = req.body;
+    const { resumeText, base64File, mimeType, fileName, candidateName: userProvidedName } = req.body;
 
     if (!resumeText && !base64File) {
       return res.status(400).json({
         error: 'Missing required parameter: provide either `resumeText` or `base64File`.',
       });
+    }
+
+    let extractedText = typeof resumeText === 'string' ? resumeText.trim() : '';
+
+    // If PDF or base64 file provided, extract text with PDFParse
+    if (base64File && extractedText.length < 50) {
+      const pdfText = await extractTextFromBase64Pdf(base64File);
+      if (pdfText) {
+        extractedText = pdfText;
+        console.log(`[Parse Endpoint] Extracted ${extractedText.length} characters from PDF.`);
+      }
     }
 
     const ai = getGenAI();
@@ -478,8 +651,14 @@ app.post('/api/resume/parse', async (req, res) => {
         const promptText = `You are an expert ATS (Applicant Tracking System) parser and resume engineer.
 Extract and normalize all information from the provided resume into a strict structured JSON format.
 
-Resume text:
-${resumeText || 'See attached file above'}
+CRITICAL INSTRUCTIONS FOR CANDIDATE NAME & IDENTITY:
+- Extract the candidate's exact legal / professional human person name from the resume (check the top header, contact info, or title section).
+- NEVER return generic placeholders like "Candidate Name", "Resume", "Curriculum Vitae", or empty values for personalInfo.name.
+${fileName ? `- The uploaded file name is "${fileName}". If helpful, use this to confirm the candidate's name.` : ''}
+${userProvidedName ? `- The candidate specified their name as "${userProvidedName}".` : ''}
+
+Resume content:
+${extractedText || 'See attached file document'}
 
 Guidelines:
 1. Extract personal information (name, title, email, phone, location, linkedin, github, website).
@@ -498,7 +677,7 @@ Guidelines:
 7. Extract certifications: name, issuer, date, credentialId.
 Ensure IDs are generated (e.g. 'exp-1', 'edu-1').`;
 
-        contents.push(promptText);
+        contents.push({ text: promptText });
 
         const response = await callGeminiSafe((model) =>
           ai.models.generateContent({
@@ -603,24 +782,32 @@ Ensure IDs are generated (e.g. 'exp-1', 'edu-1').`;
           })
         );
 
-        const parsedJson = JSON.parse(response.text || '{}');
-        return res.json({
-          success: true,
-          source: 'gemini-api',
-          parsed: parsedJson,
-        });
+        const parsedJson = safeParseJson(response.text, null);
+        if (parsedJson && parsedJson.personalInfo) {
+          // Guarantee candidate name is accurate and not generic
+          parsedJson.personalInfo.name = extractCandidateName(
+            parsedJson.personalInfo.name || userProvidedName,
+            extractedText,
+            fileName
+          );
+          return res.json({
+            success: true,
+            source: 'gemini-api',
+            parsed: parsedJson,
+          });
+        }
       } catch (aiErr: any) {
-        console.warn('[Parse Endpoint] Gemini API temporarily unavailable (503/limit), falling back seamlessly:', aiErr?.message);
+        console.log('[Parse Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
       }
     }
 
     // High-resilience fallback parser
-    const lines = (resumeText || '').split('\n').map((l: string) => l.trim()).filter(Boolean);
-    const candidateName = lines[0] || 'Candidate Name';
-    const emailMatch = (resumeText || '').match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    const phoneMatch = (resumeText || '').match(/(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-    const linkedinMatch = (resumeText || '').match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/);
-    const githubMatch = (resumeText || '').match(/github\.com\/[a-zA-Z0-9_-]+/);
+    const lines = (extractedText || '').split('\n').map((l: string) => l.trim()).filter(Boolean);
+    const candidateName = extractCandidateName(userProvidedName, extractedText, fileName);
+    const emailMatch = (extractedText || '').match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    const phoneMatch = (extractedText || '').match(/(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
+    const linkedinMatch = (extractedText || '').match(/linkedin\.com\/in\/[a-zA-Z0-9_-]+/);
+    const githubMatch = (extractedText || '').match(/github\.com\/[a-zA-Z0-9_-]+/);
 
     const fallbackParsed = {
       personalInfo: {
@@ -798,14 +985,16 @@ Identify:
           })
         );
 
-        const analysisJson = JSON.parse(response.text || '{}');
-        return res.json({
-          success: true,
-          source: 'gemini-api',
-          analysis: analysisJson,
-        });
+        const analysisJson = safeParseJson(response.text, null);
+        if (analysisJson && (analysisJson.atsScore !== undefined || analysisJson.strengths)) {
+          return res.json({
+            success: true,
+            source: 'gemini-api',
+            analysis: analysisJson,
+          });
+        }
       } catch (aiErr: any) {
-        console.warn('[Analyze Endpoint] Gemini API temporarily unavailable (503/limit), falling back seamlessly:', aiErr?.message);
+        console.log('[Analyze Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
       }
     }
 
@@ -1030,14 +1219,16 @@ Calculate:
           })
         );
 
-        const matchJson = JSON.parse(response.text || '{}');
-        return res.json({
-          success: true,
-          source: 'gemini-api',
-          match: matchJson,
-        });
+        const matchJson = safeParseJson(response.text, null);
+        if (matchJson && (matchJson.matchPercentage !== undefined || matchJson.matchingSkills)) {
+          return res.json({
+            success: true,
+            source: 'gemini-api',
+            match: matchJson,
+          });
+        }
       } catch (aiErr: any) {
-        console.warn('[Job Match Endpoint] Gemini API temporarily unavailable (503/limit), falling back seamlessly:', aiErr?.message);
+        console.log('[Job Match Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
       }
     }
 
@@ -1131,7 +1322,7 @@ ${JSON.stringify(chatHistory || [])}
           answer: response.text || 'No response generated.',
         });
       } catch (aiErr: any) {
-        console.warn('[Ask Endpoint] Gemini API temporarily unavailable (503/limit), falling back seamlessly:', aiErr?.message);
+        console.log('[Ask Endpoint] Active AI engine fallback deployed:', aiErr?.message?.slice(0, 100));
       }
     }
 

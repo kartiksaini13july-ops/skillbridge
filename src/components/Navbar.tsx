@@ -18,6 +18,7 @@ interface NavbarProps {
   onSelectSample: (key: string) => void;
   onOpenUpload: () => void;
   apiHealthy: boolean | null;
+  customCandidateName?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectSample,
   onOpenUpload,
   apiHealthy,
+  customCandidateName,
 }) => {
   return (
     <header id="app-header" className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
@@ -124,7 +126,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <option value="software_engineer">Alex Morgan (SDE)</option>
               <option value="product_manager">Priya Sharma (PM)</option>
-              {selectedSampleKey === 'custom' && <option value="custom">Custom Upload</option>}
+              {selectedSampleKey === 'custom' && (
+                <option value="custom">
+                  {customCandidateName ? `${customCandidateName} (Uploaded)` : 'Custom Upload'}
+                </option>
+              )}
             </select>
           </div>
 

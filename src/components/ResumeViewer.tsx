@@ -19,26 +19,55 @@ import {
   BookOpen,
   Clock,
   ExternalLink,
-  Rocket
+  Rocket,
+  Edit3
 } from 'lucide-react';
 import { ParsedResume, SkillGapItem } from '../types';
 
 interface ResumeViewerProps {
   resume: ParsedResume;
-  onOpenAudit: () => void;
-  onOpenChat: () => void;
+  onOpenAudit?: () => void;
+  onOpenGaps?: () => void;
+  onOpenChat?: () => void;
   atsScore?: number;
   skillGaps?: SkillGapItem[];
+  onUpdateResume?: (updated: ParsedResume) => void;
 }
 
 export const ResumeViewer: React.FC<ResumeViewerProps> = ({
   resume,
   onOpenAudit,
+  onOpenGaps,
   onOpenChat,
   atsScore = 88,
   skillGaps = [],
+  onUpdateResume,
 }) => {
   const [copied, setCopied] = React.useState(false);
+  const personalInfo = resume.personalInfo || {
+    name: (resume as any).name || 'Candidate',
+    title: 'Professional Engineer',
+  };
+  const [isEditingName, setIsEditingName] = React.useState(false);
+  const [nameValue, setNameValue] = React.useState(personalInfo.name || '');
+
+  React.useEffect(() => {
+    setNameValue(personalInfo.name || '');
+  }, [personalInfo.name]);
+
+  const handleSaveName = () => {
+    setIsEditingName(false);
+    if (onUpdateResume) {
+      const updated = {
+        ...resume,
+        personalInfo: {
+          ...personalInfo,
+          name: nameValue.trim() || 'Candidate',
+        },
+      };
+      onUpdateResume(updated);
+    }
+  };
 
   const handleCopyJson = () => {
     navigator.clipboard.writeText(JSON.stringify(resume, null, 2));
@@ -50,7 +79,7 @@ export const ResumeViewer: React.FC<ResumeViewerProps> = ({
     window.print();
   };
 
-  const { personalInfo, summary, skills, experience, education, projects, certifications } = resume;
+  const { summary, skills, experience, education, projects, certifications } = resume;
 
   return (
     <div className="flex flex-col gap-4">
@@ -66,6 +95,17 @@ export const ResumeViewer: React.FC<ResumeViewerProps> = ({
             <span>ATS Score: {atsScore}/100</span>
             <span className="text-[10px] text-emerald-600 font-mono">(Audit)</span>
           </div>
+
+          {onOpenGaps && (
+            <button
+              onClick={onOpenGaps}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold hover:bg-indigo-100 transition-colors"
+              title="View D3 Skill Radar Chart & Recommended Courses"
+            >
+              <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+              <span>{skillGaps?.length ?? 3} Gaps & Radar</span>
+            </button>
+          )}
 
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-medium">
             <span>{experience?.length || 0} Roles</span>
@@ -110,9 +150,39 @@ export const ResumeViewer: React.FC<ResumeViewerProps> = ({
         {/* Header / Personal Info */}
         <div className="border-b border-slate-100 pb-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
-              {personalInfo.name || 'Candidate Name'}
-            </h1>
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                  autoFocus
+                  className="text-2xl sm:text-3xl font-extrabold text-slate-950 px-2 py-0.5 border border-indigo-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 bg-white"
+                />
+                <button
+                  onClick={handleSaveName}
+                  className="px-3 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 text-xs flex items-center gap-1 font-semibold shadow-xs transition-colors"
+                  title="Save candidate name"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  <span>Save</span>
+                </button>
+              </div>
+            ) : (
+              <div className="group flex items-center gap-2.5">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
+                  {nameValue || personalInfo.name || 'Candidate Name'}
+                </h1>
+                <button
+                  onClick={() => setIsEditingName(true)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-slate-100"
+                  title="Click to edit candidate name"
+                >
+                  <Edit3 className="h-4 w-4" />
+                </button>
+              </div>
+            )}
             <span className="text-sm font-semibold text-indigo-600 tracking-wide uppercase">
               {personalInfo.title}
             </span>

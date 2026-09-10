@@ -24,23 +24,48 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const [activeMode, setActiveMode] = useState<'upload' | 'paste'>('upload');
   const [pastedText, setPastedText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [candidateNameInput, setCandidateNameInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const deriveNameFromFilename = (filename: string) => {
+    const base = filename.replace(/\.[^/.]+$/, '');
+    const cleaned = base
+      .replace(/[-_.]+/g, ' ')
+      .replace(/\b(resume|cv|curriculum|vitae|updated|latest|draft|final|official|new|202\d|201\d|v\d+)\b/gi, '')
+      .trim();
+    if (cleaned.length >= 2) {
+      return cleaned
+        .split(/\s+/)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
+    }
+    return '';
+  };
+
+  const handleFileSelection = (file: File) => {
+    setSelectedFile(file);
+    setError(null);
+    if (!candidateNameInput) {
+      const derived = deriveNameFromFilename(file.name);
+      if (derived) {
+        setCandidateNameInput(derived);
+      }
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-      setError(null);
+      handleFileSelection(e.target.files[0]);
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
-      setError(null);
+      handleFileSelection(e.dataTransfer.files[0]);
     }
   };
 
@@ -50,6 +75,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
     try {
       let payload: any = {};
+
+      if (candidateNameInput.trim()) {
+        payload.candidateName = candidateNameInput.trim();
+      }
 
       if (activeMode === 'paste') {
         if (!pastedText.trim()) {
@@ -65,21 +94,29 @@ export const UploadModal: React.FC<UploadModalProps> = ({
           return;
         }
 
+        payload.fileName = selectedFile.name;
+
         // If plain text or markdown or json
         if (selectedFile.type.includes('text') || selectedFile.name.endsWith('.txt') || selectedFile.name.endsWith('.md')) {
           const text = await selectedFile.text();
           payload.resumeText = text;
         } else {
-          // Base64 encode for PDF or documents
-          const buffer = await selectedFile.arrayBuffer();
-          const bytes = new Uint8Array(buffer);
-          let binary = '';
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-          }
-          const base64 = btoa(binary);
-          payload.base64File = base64;
-          payload.mimeType = selectedFile.type || 'application/pdf';
+          // Read base64 safely using browser FileReader
+          const base64Data = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const res = reader.result as string;
+              const cleanBase64 = res.includes(',') ? res.split(',')[1] : res;
+              resolve(cleanBase64);
+            };
+            reader.onerror = () => reject(new Error('Failed to read resume file'));
+            reader.readAsDataURL(selectedFile);
+          });
+
+          payload.base64File = base64Data;
+          payload.mimeType = selectedFile.name.toLowerCase().endsWith('.pdf')
+            ? 'application/pdf'
+            : (selectedFile.type || 'application/pdf');
         }
       }
 
@@ -186,6 +223,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               ></textarea>
             </div>
           )}
+
+          {/* Candidate Name Input */}
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Candidate Name <span className="font-normal text-slate-400">(Auto-detected by AI, or enter manually)</span>:
+            </label>
+            <input
+              type="text"
+              value={candidateNameInput}
+              onChange={(e) => setCandidateNameInput(e.target.value)}
+              placeholder="e.g. Kartik Saini"
+              className="w-full text-xs px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 placeholder:text-slate-400 font-medium"
+            />
+          </div>
 
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">

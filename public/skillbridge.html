@@ -302,6 +302,18 @@ function loadSampleResume(){
 }
 loadSampleResume();
 
+function deriveCandidateNameFromFilename(filename){
+  const base = filename.replace(/\.[^/.]+$/, '');
+  const cleaned = base
+    .replace(/[-_.]+/g, ' ')
+    .replace(/\b(resume|cv|curriculum|vitae|updated|latest|draft|final|official|new|202\d|201\d|v\d+)\b/gi, '')
+    .trim();
+  if (cleaned.length >= 2) {
+    return cleaned.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  }
+  return '';
+}
+
 function handleFileSelect(input){
   const dropZone = document.getElementById('dropZone');
   const icon = dropZone.querySelector('.material-symbols-outlined');
@@ -312,10 +324,19 @@ function handleFileSelect(input){
     icon.style.color = 'var(--emerald)';
     text.innerHTML = `Selected: <span style="color:var(--neon-blue);">${resumeFile.name}</span>`;
     dropZone.classList.add('has-file');
+
+    const guessed = deriveCandidateNameFromFilename(resumeFile.name);
+    if(guessed){
+      const candInput = document.getElementById('candName');
+      if(candInput) candInput.value = guessed;
+    }
   }
 }
 
 async function extractPdfText(file){
+  if(typeof pdfjsLib !== 'undefined' && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: buf}).promise;
   let text = '';
@@ -352,6 +373,18 @@ async function runAnalysis(){
   try{
     if(resumeFile){
       resumeText = await extractPdfText(resumeFile);
+      const candInput = document.getElementById('candName');
+      if(candInput && (!candInput.value || candInput.value === 'Alex Morgan' || candInput.value === 'Candidate')){
+        const lines = resumeText.split('\n').map(l => l.trim().replace(/^[•*\-\d.\s|]+/, '').trim()).filter(Boolean);
+        for(const line of lines.slice(0, 10)){
+          if(/@|https?:\/\/|\.com|\.io|\.net|\+?\d{3,}|summary|objective|skills|experience|education|contact|phone|email/i.test(line)) continue;
+          const words = line.split(/\s+/).filter(Boolean);
+          if(words.length >= 2 && words.length <= 4 && /^[a-zA-Z\s.'-]+$/.test(line)){
+            candInput.value = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            break;
+          }
+        }
+      }
     }
     if(!resumeText || resumeText.trim().length < 30){
       throw new Error('Please paste resume text or upload a PDF with readable content.');

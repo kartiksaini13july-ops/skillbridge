@@ -21,8 +21,9 @@ It transforms unstructured resumes into structured data, audits ATS compatibilit
     - **Tone & Action Verbs** (proactive ownership vs. passive tasks)
   - Predicts seniority level and estimated years of experience.
 
-- **🎓 Skill Gaps & Recommended Courses**
-  - Analyzes the candidate's profile against industry benchmarks for their target role.
+- **🎓 Skill Gaps & Recommended Courses (with D3.js Skill Radar Chart)**
+  - Interactive **D3.js Skill Proficiency Radar Chart** comparing candidate skills against senior industry standards across 6-8 role-specific competencies.
+  - Responsive SVG canvas with `ResizeObserver`, hover tooltips, and gap metric indicators.
   - Flags **High-Priority** and **Medium-Priority** skill gaps.
   - Recommends real-world courses (platform, course title, duration, free/paid audit flag, direct link).
   - Supplies **Portfolio Capstone Blueprints** with pre-formulated resume lines to close each gap.

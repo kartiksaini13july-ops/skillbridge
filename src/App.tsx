@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { ResumeViewer } from './components/ResumeViewer';
 import { AtsAuditPanel } from './components/AtsAuditPanel';
+import { SkillGapsCoursesView } from './components/SkillGapsCoursesView';
 import { JobMatcherPanel } from './components/JobMatcherPanel';
 import { ApiExplorer } from './components/ApiExplorer';
 import { AiChatDrawer } from './components/AiChatDrawer';
@@ -109,6 +110,7 @@ export default function App() {
         onSelectSample={handleSelectSample}
         onOpenUpload={() => setIsUploadOpen(true)}
         apiHealthy={apiHealthy}
+        customCandidateName={selectedSampleKey === 'custom' ? currentResume.personalInfo?.name : undefined}
       />
 
       {/* Main Content Area */}
@@ -233,13 +235,25 @@ export default function App() {
                 atsScore={analysis?.atsScore}
                 skillGaps={analysis?.skillGaps}
                 onOpenAudit={() => setViewerSubView('audit')}
+                onOpenGaps={() => setViewerSubView('gaps')}
                 onOpenChat={() => setIsChatOpen(true)}
+                onUpdateResume={(updated) => setCurrentResume(updated)}
+              />
+            ) : viewerSubView === 'gaps' ? (
+              <SkillGapsCoursesView
+                resume={currentResume}
+                analysis={analysis}
+                loading={loadingAnalysis}
+                onRefreshAnalysis={() => runAtsAnalysis(currentResume)}
+                onNavigateToResume={() => setViewerSubView('resume')}
+                onNavigateToMatcher={() => setActiveTab('matcher')}
               />
             ) : (
               <AtsAuditPanel
                 analysis={analysis}
                 loading={loadingAnalysis}
                 onRefreshAnalysis={() => runAtsAnalysis(currentResume)}
+                onOpenGaps={() => setViewerSubView('gaps')}
               />
             )}
           </div>
